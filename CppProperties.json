@@ -1,0 +1,16 @@
+{
+  "configurations": [
+    {
+      "inheritEnvironments": [
+        "mingw_64"
+      ],
+      "name": "Mingw64",
+      "includePath": [
+        "${workspaceRoot}\\include",
+        "C:\\Program Files\\w64devkit\\lib\\gcc\\x86_64-w64-mingw32\\14.2.0\\include",
+        "C:\\Program Files\\w64devkit\\x86_64-w64-mingw32\\include"
+      ],
+      "intelliSenseMode": "linux-gcc-x64"
+    }
+  ]
+}
