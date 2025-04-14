@@ -29,7 +29,7 @@ float vector3_dot(vector3 a, vector3 b);
 vector3 vector3_cross(vector3 a, vector3 b);
 vector3 vector3_lerp(vector3 a, vector3 b, float t);
 
-typedef struct { 
+typedef struct {
     float value[4][4];
 } matrix4;
 

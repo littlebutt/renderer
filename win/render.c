@@ -20,18 +20,19 @@ LRESULT CALLBACK __win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-struct _device_ctx *_render_build_device(const int device_left, const int device_top, const int device_width, const int device_height,
+struct _device_ctx *_render_build_device(const int device_left, const int device_top,
+                                         const int device_width, const int device_height,
                                          const char *device_name)
 {
     WNDCLASS wndClass = {CS_BYTEALIGNCLIENT, (WNDPROC)__win_proc, 0, 0, 0, NULL, NULL, NULL, NULL,
-                         TEXT(device_name)};
+                         device_name};
     wndClass.hInstance = GetModuleHandle(NULL);
 
     if (!RegisterClass(&wndClass))
     {
         return NULL;
     }
-    HWND window = CreateWindow(TEXT(device_name), TEXT(device_name),
+    HWND window = CreateWindow(device_name, device_name,
                                WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX, 0, 0, 0, 0,
                                NULL, NULL, wndClass.hInstance, NULL);
     if (window == NULL)

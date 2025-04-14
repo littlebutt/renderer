@@ -1,11 +1,10 @@
 #ifndef __VERTEX_H__
 #define __VERTEX_H__
 
-#include "vector.h"
 #include "color.h"
+#include "vector.h"
 
-typedef struct 
-{
+typedef struct {
     vector3 pos;
     vector3 norm;
     color color;
@@ -14,6 +13,5 @@ typedef struct
 
 vertex vertex_new(vector3 pos, vector3 norm, color color, vector2 uv);
 vertex vertex_multiply(vertex v, matrix4 m);
-
 
 #endif // __VERTEX_H__

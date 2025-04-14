@@ -11,13 +11,7 @@ typedef struct vertex_list {
 } vertex_list;
 
 typedef struct {
-    int i;
-    struct index_list *next;
-} index_list;
-
-typedef struct {
     vertex_list *vertices;
-    index_list *indices;
 } mesh_ctx;
 
 mesh_ctx *mesh_new();

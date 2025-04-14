@@ -3,16 +3,20 @@
 mesh_ctx *mesh_new()
 {
     mesh_ctx *m = (mesh_ctx *)malloc(sizeof(mesh_ctx));
+    if (m == NULL)
+    {
+        return NULL;
+    }
     m->vertices = (vertex_list *)malloc(sizeof(vertex_list));
     m->vertices->next = NULL;
-    m->indices = (index_list *)malloc(sizeof(index_list));
-    m->indices->next = NULL;
     return m;
 }
+
 void mesh_free(mesh_ctx *mesh)
 {
     // TODO
 }
+
 int mesh_append_vertex(mesh_ctx *mesh, vertex v)
 {
     if (mesh == NULL)
