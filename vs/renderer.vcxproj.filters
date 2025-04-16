@@ -39,6 +39,9 @@
     <ClInclude Include="..\include\misc.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\texture.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\color.c">
@@ -66,6 +69,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\win\misc.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\texture.c">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

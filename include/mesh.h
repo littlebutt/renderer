@@ -12,11 +12,11 @@ typedef struct vertex_list {
 
 typedef struct {
     vertex_list *vertices;
-} mesh_ctx;
+} mesh;
 
-mesh_ctx *mesh_new();
-void mesh_free(mesh_ctx *mesh);
-int mesh_append_vertex(mesh_ctx *mesh, vertex v);
-vertex_list *mesh_get_vertices(mesh_ctx *mesh);
+mesh *mesh_new();
+void mesh_free(mesh *mesh);
+int mesh_append_vertex(mesh *mesh, vertex v);
+vertex_list *mesh_get_vertices(mesh *mesh);
 
 #endif // __MESH_H__

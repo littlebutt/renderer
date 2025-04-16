@@ -1,8 +1,8 @@
 #include "mesh.h"
 
-mesh_ctx *mesh_new()
+mesh *mesh_new()
 {
-    mesh_ctx *m = (mesh_ctx *)malloc(sizeof(mesh_ctx));
+    mesh *m = (mesh *)malloc(sizeof(mesh));
     if (m == NULL)
     {
         return NULL;
@@ -12,12 +12,12 @@ mesh_ctx *mesh_new()
     return m;
 }
 
-void mesh_free(mesh_ctx *mesh)
+void mesh_free(mesh *mesh)
 {
     // TODO
 }
 
-int mesh_append_vertex(mesh_ctx *mesh, vertex v)
+int mesh_append_vertex(mesh *mesh, vertex v)
 {
     if (mesh == NULL)
     {
@@ -34,7 +34,7 @@ int mesh_append_vertex(mesh_ctx *mesh, vertex v)
     return 1;
 }
 
-vertex_list *mesh_get_vertices(mesh_ctx *mesh)
+vertex_list *mesh_get_vertices(mesh *mesh)
 {
     if (mesh == NULL)
     {

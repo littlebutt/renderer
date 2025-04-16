@@ -139,6 +139,7 @@
     <ClInclude Include="..\include\misc.h" />
     <ClInclude Include="..\include\reader.h" />
     <ClInclude Include="..\include\render.h" />
+    <ClInclude Include="..\include\texture.h" />
     <ClInclude Include="..\include\trans.h" />
     <ClInclude Include="..\include\vector.h" />
     <ClInclude Include="..\include\vertex.h" />
@@ -148,6 +149,7 @@
     <ClCompile Include="..\src\main.c" />
     <ClCompile Include="..\src\mesh.c" />
     <ClCompile Include="..\src\reader.c" />
+    <ClCompile Include="..\src\texture.c" />
     <ClCompile Include="..\src\trans.c" />
     <ClCompile Include="..\src\vector.c" />
     <ClCompile Include="..\src\vertex.c" />

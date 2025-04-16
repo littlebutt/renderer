@@ -7,7 +7,10 @@
 #include <string.h>
 
 #include "mesh.h"
+#include "texture.h"
 
-mesh_ctx *read_obj(char *filename);
+mesh *read_obj(char *filename);
+
+texture *read_bmp(char *filename);
 
 #endif // __READER_H__

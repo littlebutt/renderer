@@ -64,7 +64,6 @@ __BUILD_LIST(vertex)
 typedef struct {
     _vector3_list *pos;
     _vector3_list *norm;
-    _vector3_list *color;
     _vector2_list *uv;
     _vertex_list *vertices;
 } _process_ctx;
@@ -78,10 +77,33 @@ static _process_ctx *_process_ctx_new()
     }
     ctx->pos = NULL;
     ctx->norm = NULL;
-    ctx->color = NULL;
     ctx->uv = NULL;
     ctx->vertices = NULL;
     return ctx;
+}
+
+#define __FREE_LIST(type, head)                                                                    \
+    do                                                                                             \
+    {                                                                                              \
+        _##type##_list *curr = head;                                                               \
+        while (curr)                                                                               \
+        {                                                                                          \
+            _##type##_list *tmp = curr->next;                                                      \
+            free(curr);                                                                            \
+            curr = tmp;                                                                            \
+        }                                                                                          \
+        head = NULL;                                                                               \
+    } while (0)
+
+static void _process_ctx_free(_process_ctx* ctx)
+{
+    if (ctx == NULL)
+    {
+        return;
+    }
+    __FREE_LIST(vector3, ctx->pos);
+    __FREE_LIST(vector3, ctx->norm);
+    __FREE_LIST(vector2, ctx->uv);
 }
 
 static int _process_v(_process_ctx *ctx, _split_items *items)
@@ -215,7 +237,7 @@ int _process_f(_process_ctx *ctx, _split_items *items)
         {
             return 0;
         }
-        vertex _v = vertex_new(*pos, *norm, color_new(1.0f, 1.0f, 1.0f, 1.0f), *uv);
+        vertex _v = vertex_new(*pos, *norm, *uv);
         if (ctx->vertices == NULL)
         {
             ctx->vertices = (_vertex_list *)malloc(sizeof(_vertex_list));
@@ -275,9 +297,9 @@ int _process_vn(_process_ctx *ctx, _split_items *items)
 
 #define __PROCESS(type, ctx, items) _process_##type(ctx, items)
 
-mesh_ctx *read_obj(char *filename)
+mesh *read_obj(char *filename)
 {
-    mesh_ctx *mesh = mesh_new();
+    mesh *mesh = mesh_new();
     FILE *fp = fopen(filename, "r");
     if (fp == NULL)
     {
@@ -326,6 +348,104 @@ mesh_ctx *read_obj(char *filename)
         }
 
         free(buffer);
+        fclose(fp);
     }
+    mesh->vertices = (vertex_list *)ctx->vertices;
+    _process_ctx_free(ctx);
     return mesh;
+}
+
+#pragma pack(push, 1)
+typedef struct
+{
+    unsigned short bh_type;    // bmp type 2 bytes
+    unsigned int  bh_size;     // bmp size 4 bytes
+    unsigned short resv1;
+    unsigned short resv2;     // reserved area 2 * 2 bytes
+    unsigned int  bh_offsize;  // offsize for data area 4 bytes
+} _bmp_file_header;
+
+typedef struct
+{
+    unsigned int bi_size; // bmp size in word 4 bytes
+    int bi_width; // width 4 bytes
+    int  bi_height; // height 4 bytes
+    unsigned short bi_planes; // number of planes 2 bytes
+    unsigned short bi_bcount;  // bit count 2 bytes
+    unsigned int bi_comp; // if compressed or not 4 bytes
+    unsigned int bi_simage;   // bmp size in byte 4 bytes
+    int bi_xppm;    // x pixel per meter 4 bytes
+    int bi_yppm;      // y pixel per meter 4 bytes
+    unsigned int bi_cused;    // color used 4 bytes
+    unsigned int bi_cimp; // important color 4 bytes
+}_bmp_file_info;
+
+typedef struct
+{
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+    unsigned char a;
+}_bmp_color;
+
+#pragma pack(pop)
+
+typedef struct
+{
+    _bmp_file_header *header;
+    _bmp_file_info *info;
+    _bmp_color palette[];
+};
+
+texture* read_bmp(char* filename)
+{
+    FILE *fp = fopen(filename, "r");
+    if (fp == NULL)
+    {
+        return NULL;
+    }
+    _bmp_file_header bf_header;
+    fread(&bf_header, sizeof(bf_header), 1, fp);
+    if (bf_header.bh_type != 0x4D42)
+    {
+        printf("[reader] Illegal BMP file\n");
+        fclose(fp);
+        return NULL;
+    }
+    _bmp_file_info bf_info;
+    fread(&bf_info, sizeof(bf_info), 1, fp);
+    if (bf_info.bi_bcount != 8)
+    {
+        printf("[reader] Only support 8 bit file\n");
+        fclose(fp);
+        return NULL;
+    }
+
+    int width = bf_info.bi_width;
+    int height = bf_info.bi_height;
+    int palette_size = bf_info.bi_cused ? bf_info.bi_cused : 256;
+
+    _bmp_color palette[256];
+    fread(palette, sizeof(_bmp_color), palette_size, fp);
+
+    int row_padded = (width + 3) & ~3;
+
+    unsigned char *pixel_data = malloc(row_padded * height);
+    fseek(fp, bf_header.bh_offsize, SEEK_SET);
+    fread(pixel_data, 1, row_padded * height, fp);
+    fclose(fp);
+
+    texture *res = (texture *)malloc(sizeof(texture) + width * sizeof(color));
+
+    for (int y = 0; y < height; y++)
+    {
+        unsigned char *row = pixel_data + (height - 1 - y) * row_padded;
+        for (int x = 0; x < width; x++)
+        {
+            int index = row[x];
+            _bmp_color p = palette[index];
+            res->data[x + y * width] = color_new(p.r, p.g, p.b, 1.0f); // FIXME
+        }
+    }
+    return res;
 }

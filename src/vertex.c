@@ -1,11 +1,10 @@
 #include "vertex.h"
 
-vertex vertex_new(vector3 pos, vector3 norm, color color, vector2 uv)
+vertex vertex_new(vector3 pos, vector3 norm, vector2 uv)
 {
     vertex v;
     v.pos = pos;
     v.norm = norm;
-    v.color = color;
     v.uv = uv;
     return v;
 }
@@ -30,8 +29,6 @@ vertex vertex_multiply(vertex v, matrix4 m)
                v.norm.w * m.value[2][3];
     r.norm.w = v.norm.x * m.value[3][0] + v.norm.y * m.value[3][1] + v.norm.z * m.value[3][2] +
                v.norm.w * m.value[3][3];
-
-    r.color = v.color;
     r.uv = v.uv;
     return r;
 }
