@@ -17,11 +17,7 @@ static float _texture_clamp(float min, float max, float value)
 }
 
 color texture_sample(texture* tex, float u, float v)
-{ 
-    if (tex->data == NULL)
-    {
-        return color_new(0.0f, 0.0f, 0.0f, 0.0f);
-    }
+{
     float _u = _texture_clamp(0.0f, 1.0f, u);
     float _v = _texture_clamp(0.0f, 1.0f, v);
     int width = tex->width * _u;

@@ -112,6 +112,13 @@ vector3 vector3_lerp(vector3 a, vector3 b, float t)
     return vector3_add(a, vector3_multiply(vector3_subtract(b, a), t));
 }
 
+vector3 vector3_normalize(vector3 a)
+{
+    float sm = vector3_dot(a, a); 
+    float ssm = sqrt(sm);
+    return vector3_divide(a, ssm);
+}
+
 matrix4 matrix_new()
 {
     matrix4 m = {0};

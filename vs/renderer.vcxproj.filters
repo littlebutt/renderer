@@ -42,6 +42,12 @@
     <ClInclude Include="..\include\texture.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\shader.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\light.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\color.c">
@@ -72,6 +78,12 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\src\texture.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\light.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\shader.c">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

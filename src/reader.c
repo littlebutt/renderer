@@ -390,13 +390,6 @@ typedef struct
 
 #pragma pack(pop)
 
-typedef struct
-{
-    _bmp_file_header *header;
-    _bmp_file_info *info;
-    _bmp_color palette[];
-};
-
 texture* read_bmp(char* filename)
 {
     FILE *fp = fopen(filename, "r");
@@ -435,7 +428,7 @@ texture* read_bmp(char* filename)
     fread(pixel_data, 1, row_padded * height, fp);
     fclose(fp);
 
-    texture *res = (texture *)malloc(sizeof(texture) + width * sizeof(color));
+    texture *res = (texture *)malloc(sizeof(texture) + width * sizeof(color) * height);
 
     for (int y = 0; y < height; y++)
     {
@@ -444,8 +437,138 @@ texture* read_bmp(char* filename)
         {
             int index = row[x];
             _bmp_color p = palette[index];
-            res->data[x + y * width] = color_new(p.r, p.g, p.b, 1.0f); // FIXME
+            res->data[x + y * width] = color_new(p.r / 255.0f, p.g / 255.0f, p.b / 255.0f, 1.0f);
         }
     }
+    res->height = height;
+    res->width = width;
     return res;
+}
+
+#pragma pack(push, 1)
+typedef struct
+{
+    char th_idlength;
+    char th_colormaptype;
+    char th_datatypecode;
+    short th_colormaporigin;
+    short th_colormaplength;
+    char th_colormapdepth;
+    short th_x_origin;
+    short th_y_origin;
+    short th_width;
+    short th_height;
+    char th_bitsperpixel;
+    char th_imagedescriptor;
+} _tga_header;
+#pragma pack(pop)
+
+typedef struct
+{
+    union
+    {
+        struct
+        {
+            unsigned char b, g, r, a;
+        };
+        unsigned char raw[4];
+        unsigned int val;
+    };
+    int tc_bytespp;
+} _tga_color;
+
+int _tga_load_rle_data(FILE *fp, unsigned char *data, unsigned long width, unsigned long height, unsigned int bytespp);
+
+texture *read_tga(char *filename)
+{
+    FILE *fp = fopen(filename, "r");
+    if (fp == NULL)
+    {
+        return NULL;
+    }
+    _tga_header tga_header;
+    fread(&tga_header, sizeof(tga_header), 1, fp);
+    texture *res = (texture *)malloc(sizeof(texture) + tga_header.th_width * sizeof(color) * tga_header.th_height);
+    res->height = tga_header.th_height;
+    res->width = tga_header.th_width;
+    unsigned long nbytes = (tga_header.th_bitsperpixel >> 3) * res->width * res->height;
+    unsigned char *data = (unsigned char *)malloc(nbytes);
+    if (tga_header.th_datatypecode == 3 || tga_header.th_datatypecode == 2)
+    {
+        if (fread(data, nbytes, 1, fp) != nbytes)
+        {
+            fclose(fp);
+            return NULL;
+        }
+    }
+    else if (tga_header.th_datatypecode == 10 || tga_header.th_datatypecode == 11)
+    {
+        if (!_tga_load_rle_data(fp, data, res->width, res->height, tga_header.th_bitsperpixel >> 3))
+        {
+            fclose(fp);
+            return NULL;
+        }
+    }
+    else
+    {
+        fclose(fp);
+        return NULL;
+    }
+    // TODO: imagedescriptor case and return data
+    fclose(fp);
+    return res;
+}
+
+int _tga_load_rle_data(FILE *fp, unsigned char *data, unsigned long width, unsigned long height, unsigned int bytespp)
+{
+    unsigned long pixelcount = width * height;
+	unsigned long currentpixel = 0;
+	unsigned long currentbyte  = 0;
+	_tga_color colorbuffer;
+	do
+    {
+		unsigned char chunkheader = 0;
+		chunkheader = fgetc(fp);
+        if (chunkheader == EOF)
+            return 0;
+		if (chunkheader < 128) {
+			chunkheader ++;
+			for (int i = 0; i < chunkheader; i++)
+            {
+				if (fread(colorbuffer.raw, 1, bytespp, fp) != bytespp)
+                {
+                    return 0;
+                }
+				for (int t=0; t<bytespp; t++)
+                {
+                    data[currentbyte++] = colorbuffer.raw[t];
+                }
+				currentpixel ++;
+				if (currentpixel > pixelcount) {
+					return 0;
+				}
+			}
+		}
+        else
+        {
+			chunkheader -= 127;
+			if (fread(colorbuffer.raw, 1, bytespp, fp) != bytespp)
+            {
+                return 0;
+            }
+			for (int i = 0; i < chunkheader; i ++)
+            {
+				for (int t = 0; t < bytespp; t ++)
+                {
+                    data[currentbyte++] = colorbuffer.raw[t];
+                }
+				currentpixel ++;
+				if (currentpixel > pixelcount)
+                {
+					return 0;
+				}
+			}
+		}
+	} while (currentpixel < pixelcount);
+    return 1;
 }

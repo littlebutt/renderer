@@ -1,6 +1,8 @@
 #ifndef __VECTOR_H__
 #define __VECTOR_H__
 
+#include <math.h>
+
 typedef struct {
     float x;
     float y;
@@ -28,6 +30,7 @@ vector3 vector3_divide(vector3 a, float value);
 float vector3_dot(vector3 a, vector3 b);
 vector3 vector3_cross(vector3 a, vector3 b);
 vector3 vector3_lerp(vector3 a, vector3 b, float t);
+vector3 vector3_normalize(vector3 a);
 
 typedef struct {
     float value[4][4];

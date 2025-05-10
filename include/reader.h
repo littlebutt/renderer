@@ -13,4 +13,6 @@ mesh *read_obj(char *filename);
 
 texture *read_bmp(char *filename);
 
+texture *read_tga(char *filename);
+
 #endif // __READER_H__
