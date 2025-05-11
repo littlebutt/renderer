@@ -61,18 +61,12 @@ __BUILD_LIST(vector3)
 __BUILD_LIST(vector2)
 __BUILD_LIST(vertex)
 
-typedef struct _face_list
-{
-    int faces[4];
-    struct _face_list *next;
-} _face_list;
-
 typedef struct {
     _vector3_list *pos;
     _vector3_list *norm;
     _vector2_list *uv;
     _vertex_list *vertices;
-    _face_list *faces;
+    int nvertpf;
 } _process_ctx;
 
 static _process_ctx *_process_ctx_new()
@@ -86,7 +80,7 @@ static _process_ctx *_process_ctx_new()
     ctx->norm = NULL;
     ctx->uv = NULL;
     ctx->vertices = NULL;
-    ctx->faces = NULL;
+    ctx->nvertpf = 0;
     return ctx;
 }
 
@@ -224,13 +218,12 @@ int _get_vector2(_vector2_list *list, int idx, vector2 **res)
 
 int _process_f(_process_ctx *ctx, _split_items *items)
 {
-    int _faces[4];
+    ctx->nvertpf = items->len - 1;
     for (size_t i = 1; i < items->len; i++)
     {
         char *_tmp = items->item[i];
         _split_items *_tmp_items = _split_string(_tmp, strlen(_tmp), '/');
         assert(_tmp_items->len == 3);
-        _faces[i - 1] = atoi(_tmp_items->item[0]) - 1;
         vector3 *pos = NULL;
         if (_get_vector3(ctx->pos, atoi(_tmp_items->item[0]) - 1, &pos) == 0)
         {
@@ -268,33 +261,6 @@ int _process_f(_process_ctx *ctx, _split_items *items)
             p->next->v = _v;
             p->next->next = NULL;
         }
-    }
-    if (ctx->faces == NULL)
-    {
-        ctx->faces = (_face_list *)malloc(sizeof(_face_list));
-        if (ctx->faces == NULL)
-        {
-            return 0;
-        }
-        for (int i = 0; i < 4; i++)
-        {
-            ctx->faces->faces[i] = _faces[i];
-        }
-        ctx->faces->next = NULL;
-    }
-    else
-    {
-        _face_list *p = ctx->faces;
-        while (p->next != NULL)
-        {
-            p = p->next;
-        }
-        p->next = (_face_list *)malloc(sizeof(_face_list));
-        for (int i = 0; i < 4; i++)
-        {
-            p->next->faces[i] = _faces[i];
-        }
-        p->next->next = NULL;
     }
     return 1;
 }
@@ -384,10 +350,9 @@ model *read_obj(char *filename)
         free(buffer);
     }
     vertex_list *vertices = (vertex_list *)ctx->vertices;
-    face_list *faces = (face_list *)ctx->faces;
     _process_ctx_free(ctx);
     fclose(fp);
-    return model_new(vertices, faces);
+    return model_new(vertices, ctx->nvertpf);
 }
 
 #pragma pack(push, 1)

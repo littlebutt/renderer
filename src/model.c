@@ -1,6 +1,6 @@
 #include "model.h"
 
-model *model_new(vertex_list *vl, face_list *fl)
+model *model_new(vertex_list *vl, int nvertpf)
 {
     model *m = (model *)malloc(sizeof(model));
     vertex_list *pvl = vl;
@@ -11,25 +11,12 @@ model *model_new(vertex_list *vl, face_list *fl)
         pvl = pvl->next;
     }
     m->vert_len = vn;
-    face_list *pfl = fl;
-    size_t fn = 0;
-    while (pfl)
-    {
-        m->faces[fn][0] = pfl->faces[0];
-        m->faces[fn][1] = pfl->faces[1];
-        m->faces[fn][2] = pfl->faces[2];
-        m->faces[fn][3] = pfl->faces[3];
-        fn++;
-        pfl = pfl->next;
-    }
-    m->face_len = fn;
+    m->nvertpf = nvertpf;
     return m;
 }
 
-size_t model_nverts();
+size_t model_nverts(model* m)
+{ return m->vert_len; }
 
-size_t model_nfaces();
-
-int model_get_face(int idx, int out[4]);
-
-int model_get_vert(int idx, vector3 *out);
+size_t model_nfaces(model* m)
+{ return m->vert_len / m->nvertpf; }

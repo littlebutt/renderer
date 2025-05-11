@@ -1,5 +1,7 @@
 #include "render.h"
 #include <windows.h>
+#include <stdint.h>
+#include <stdio.h>
 
 struct _device_ctx {
     HWND hwnd;
@@ -11,7 +13,6 @@ LRESULT CALLBACK __win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
-        
         case WM_DESTROY:
             PostQuitMessage(0);
             break;
@@ -43,7 +44,7 @@ struct _device_ctx *_render_build_device(const int device_left, const int device
     HDC sec = GetDC((window));
     HDC pri = CreateCompatibleDC(sec);
 
-    BITMAPINFO bitmapInfo = {{sizeof(BITMAPINFOHEADER), device_width, device_height, 1, 32, BI_RGB,
+    BITMAPINFO bitmapInfo = {{sizeof(BITMAPINFOHEADER), device_width, -device_height, 1, 32, BI_RGB,
                               device_width * device_height * 4, 0, 0, 0, 0}};
     LPVOID ptr;
     HBITMAP bitmapHandler = CreateDIBSection(pri, &bitmapInfo, DIB_RGB_COLORS, &ptr, 0, 0);
@@ -94,5 +95,5 @@ void render_free(render_ctx *ctx)
 void render_set_pixel(render_ctx *ctx, int x, int y,  color c)
 {
     struct _device_ctx *dev = (struct _device_ctx *)ctx->device;
-    SetPixel(dev->sec, 50, 50, RGB(255 * c.r, 255 * c.g, 255 * c.b));
+    SetPixel(dev->sec, x, y, RGB(255 * c.r, 255 * c.g, 255 * c.b));
 }
