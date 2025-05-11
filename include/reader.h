@@ -6,10 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "mesh.h"
 #include "texture.h"
+#include "vertex.h"
+#include "model.h"
 
-mesh *read_obj(char *filename);
+model *read_obj(char *filename);
 
 texture *read_bmp(char *filename);
 

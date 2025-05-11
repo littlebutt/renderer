@@ -61,11 +61,18 @@ __BUILD_LIST(vector3)
 __BUILD_LIST(vector2)
 __BUILD_LIST(vertex)
 
+typedef struct _face_list
+{
+    int faces[4];
+    struct _face_list *next;
+} _face_list;
+
 typedef struct {
     _vector3_list *pos;
     _vector3_list *norm;
     _vector2_list *uv;
     _vertex_list *vertices;
+    _face_list *faces;
 } _process_ctx;
 
 static _process_ctx *_process_ctx_new()
@@ -79,6 +86,7 @@ static _process_ctx *_process_ctx_new()
     ctx->norm = NULL;
     ctx->uv = NULL;
     ctx->vertices = NULL;
+    ctx->faces = NULL;
     return ctx;
 }
 
@@ -95,7 +103,7 @@ static _process_ctx *_process_ctx_new()
         head = NULL;                                                                               \
     } while (0)
 
-static void _process_ctx_free(_process_ctx* ctx)
+static void _process_ctx_free(_process_ctx *ctx)
 {
     if (ctx == NULL)
     {
@@ -108,8 +116,7 @@ static void _process_ctx_free(_process_ctx* ctx)
 
 static int _process_v(_process_ctx *ctx, _split_items *items)
 {
-    vector3 _v =
-        vector3_new(atof(items->item[1]), atof(items->item[2]), atof(items->item[3]), 1.0f);
+    vector3 _v = vector3_new(atof(items->item[1]), atof(items->item[2]), atof(items->item[3]));
     if (ctx->pos == NULL)
     {
         ctx->pos = (_vector3_list *)malloc(sizeof(_vector3_list));
@@ -140,7 +147,7 @@ static int _process_v(_process_ctx *ctx, _split_items *items)
 
 static int _process_vt(_process_ctx *ctx, _split_items *items)
 {
-    vector2 _v = vector2_new(atof(items->item[1]), atof(items->item[2]), 1.0f);
+    vector2 _v = vector2_new(atof(items->item[1]), atof(items->item[2]));
     if (ctx->uv == NULL)
     {
         ctx->uv = (_vector2_list *)malloc(sizeof(_vector2_list));
@@ -217,11 +224,13 @@ int _get_vector2(_vector2_list *list, int idx, vector2 **res)
 
 int _process_f(_process_ctx *ctx, _split_items *items)
 {
+    int _faces[4];
     for (size_t i = 1; i < items->len; i++)
     {
         char *_tmp = items->item[i];
         _split_items *_tmp_items = _split_string(_tmp, strlen(_tmp), '/');
         assert(_tmp_items->len == 3);
+        _faces[i - 1] = atoi(_tmp_items->item[0]) - 1;
         vector3 *pos = NULL;
         if (_get_vector3(ctx->pos, atoi(_tmp_items->item[0]) - 1, &pos) == 0)
         {
@@ -260,13 +269,39 @@ int _process_f(_process_ctx *ctx, _split_items *items)
             p->next->next = NULL;
         }
     }
+    if (ctx->faces == NULL)
+    {
+        ctx->faces = (_face_list *)malloc(sizeof(_face_list));
+        if (ctx->faces == NULL)
+        {
+            return 0;
+        }
+        for (int i = 0; i < 4; i++)
+        {
+            ctx->faces->faces[i] = _faces[i];
+        }
+        ctx->faces->next = NULL;
+    }
+    else
+    {
+        _face_list *p = ctx->faces;
+        while (p->next != NULL)
+        {
+            p = p->next;
+        }
+        p->next = (_face_list *)malloc(sizeof(_face_list));
+        for (int i = 0; i < 4; i++)
+        {
+            p->next->faces[i] = _faces[i];
+        }
+        p->next->next = NULL;
+    }
     return 1;
 }
 
 int _process_vn(_process_ctx *ctx, _split_items *items)
 {
-    vector3 _v =
-        vector3_new(atof(items->item[1]), atof(items->item[2]), atof(items->item[3]), 1.0f);
+    vector3 _v = vector3_new(atof(items->item[1]), atof(items->item[2]), atof(items->item[3]));
     if (ctx->norm == NULL)
     {
         ctx->norm = (_vector3_list *)malloc(sizeof(_vector3_list));
@@ -297,9 +332,8 @@ int _process_vn(_process_ctx *ctx, _split_items *items)
 
 #define __PROCESS(type, ctx, items) _process_##type(ctx, items)
 
-mesh *read_obj(char *filename)
+model *read_obj(char *filename)
 {
-    mesh *mesh = mesh_new();
     FILE *fp = fopen(filename, "r");
     if (fp == NULL)
     {
@@ -348,49 +382,48 @@ mesh *read_obj(char *filename)
         }
 
         free(buffer);
-        fclose(fp);
     }
-    mesh->vertices = (vertex_list *)ctx->vertices;
+    vertex_list *vertices = (vertex_list *)ctx->vertices;
+    face_list *faces = (face_list *)ctx->faces;
     _process_ctx_free(ctx);
-    return mesh;
+    fclose(fp);
+    return model_new(vertices, faces);
 }
 
 #pragma pack(push, 1)
-typedef struct
-{
-    unsigned short bh_type;    // bmp type 2 bytes
-    unsigned int  bh_size;     // bmp size 4 bytes
+
+typedef struct {
+    unsigned short bh_type; // bmp type 2 bytes
+    unsigned int bh_size;   // bmp size 4 bytes
     unsigned short resv1;
-    unsigned short resv2;     // reserved area 2 * 2 bytes
-    unsigned int  bh_offsize;  // offsize for data area 4 bytes
+    unsigned short resv2;    // reserved area 2 * 2 bytes
+    unsigned int bh_offsize; // offsize for data area 4 bytes
 } _bmp_file_header;
 
-typedef struct
-{
-    unsigned int bi_size; // bmp size in word 4 bytes
-    int bi_width; // width 4 bytes
-    int  bi_height; // height 4 bytes
+typedef struct {
+    unsigned int bi_size;     // bmp size in word 4 bytes
+    int bi_width;             // width 4 bytes
+    int bi_height;            // height 4 bytes
     unsigned short bi_planes; // number of planes 2 bytes
-    unsigned short bi_bcount;  // bit count 2 bytes
-    unsigned int bi_comp; // if compressed or not 4 bytes
+    unsigned short bi_bcount; // bit count 2 bytes
+    unsigned int bi_comp;     // if compressed or not 4 bytes
     unsigned int bi_simage;   // bmp size in byte 4 bytes
-    int bi_xppm;    // x pixel per meter 4 bytes
-    int bi_yppm;      // y pixel per meter 4 bytes
+    int bi_xppm;              // x pixel per meter 4 bytes
+    int bi_yppm;              // y pixel per meter 4 bytes
     unsigned int bi_cused;    // color used 4 bytes
-    unsigned int bi_cimp; // important color 4 bytes
-}_bmp_file_info;
+    unsigned int bi_cimp;     // important color 4 bytes
+} _bmp_file_info;
 
-typedef struct
-{
+typedef struct {
     unsigned char r;
     unsigned char g;
     unsigned char b;
     unsigned char a;
-}_bmp_color;
+} _bmp_color;
 
 #pragma pack(pop)
 
-texture* read_bmp(char* filename)
+texture *read_bmp(char *filename)
 {
     FILE *fp = fopen(filename, "r");
     if (fp == NULL)
@@ -446,8 +479,8 @@ texture* read_bmp(char* filename)
 }
 
 #pragma pack(push, 1)
-typedef struct
-{
+
+typedef struct {
     char th_idlength;
     char th_colormaptype;
     char th_datatypecode;
@@ -461,23 +494,24 @@ typedef struct
     char th_bitsperpixel;
     char th_imagedescriptor;
 } _tga_header;
+
 #pragma pack(pop)
 
-typedef struct
-{
-    union
-    {
-        struct
-        {
+typedef struct {
+    union {
+        struct {
             unsigned char b, g, r, a;
         };
+
         unsigned char raw[4];
         unsigned int val;
     };
+
     int tc_bytespp;
 } _tga_color;
 
-int _tga_load_rle_data(FILE *fp, unsigned char *data, unsigned long width, unsigned long height, unsigned int bytespp);
+int _tga_load_rle_data(FILE *fp, unsigned char *data, unsigned long width, unsigned long height,
+                       unsigned int bytespp);
 
 texture *read_tga(char *filename)
 {
@@ -488,7 +522,12 @@ texture *read_tga(char *filename)
     }
     _tga_header tga_header;
     fread(&tga_header, sizeof(tga_header), 1, fp);
-    texture *res = (texture *)malloc(sizeof(texture) + tga_header.th_width * sizeof(color) * tga_header.th_height);
+    texture *res = (texture *)malloc(sizeof(texture) +
+                                     tga_header.th_width * sizeof(color) * tga_header.th_height);
+    if (res == NULL)
+    {
+        return NULL;
+    }
     res->height = tga_header.th_height;
     res->width = tga_header.th_width;
     unsigned long nbytes = (tga_header.th_bitsperpixel >> 3) * res->width * res->height;
@@ -514,61 +553,64 @@ texture *read_tga(char *filename)
         fclose(fp);
         return NULL;
     }
-    // TODO: imagedescriptor case and return data
+    memcpy(res->data, data, nbytes);
     fclose(fp);
     return res;
 }
 
-int _tga_load_rle_data(FILE *fp, unsigned char *data, unsigned long width, unsigned long height, unsigned int bytespp)
+int _tga_load_rle_data(FILE *fp, unsigned char *data, unsigned long width, unsigned long height,
+                       unsigned int bytespp)
 {
     unsigned long pixelcount = width * height;
-	unsigned long currentpixel = 0;
-	unsigned long currentbyte  = 0;
-	_tga_color colorbuffer;
-	do
+    unsigned long currentpixel = 0;
+    unsigned long currentbyte = 0;
+    _tga_color colorbuffer;
+    do
     {
-		unsigned char chunkheader = 0;
-		chunkheader = fgetc(fp);
+        unsigned char chunkheader = 0;
+        chunkheader = fgetc(fp);
         if (chunkheader == EOF)
             return 0;
-		if (chunkheader < 128) {
-			chunkheader ++;
-			for (int i = 0; i < chunkheader; i++)
+        if (chunkheader < 128)
+        {
+            chunkheader++;
+            for (int i = 0; i < chunkheader; i++)
             {
-				if (fread(colorbuffer.raw, 1, bytespp, fp) != bytespp)
+                if (fread(colorbuffer.raw, 1, bytespp, fp) != bytespp)
                 {
                     return 0;
                 }
-				for (int t=0; t<bytespp; t++)
+                for (int t = 0; t < bytespp; t++)
                 {
                     data[currentbyte++] = colorbuffer.raw[t];
                 }
-				currentpixel ++;
-				if (currentpixel > pixelcount) {
-					return 0;
-				}
-			}
-		}
+                currentpixel++;
+                if (currentpixel > pixelcount)
+                {
+                    return 0;
+                }
+            }
+        }
         else
         {
-			chunkheader -= 127;
-			if (fread(colorbuffer.raw, 1, bytespp, fp) != bytespp)
+            chunkheader -= 127;
+            if (fread(colorbuffer.raw, 1, bytespp, fp) != bytespp)
             {
                 return 0;
             }
-			for (int i = 0; i < chunkheader; i ++)
+            for (int i = 0; i < chunkheader; i++)
             {
-				for (int t = 0; t < bytespp; t ++)
+                for (int t = 0; t < bytespp; t++)
                 {
                     data[currentbyte++] = colorbuffer.raw[t];
                 }
-				currentpixel ++;
-				if (currentpixel > pixelcount)
+                currentpixel++;
+                if (currentpixel > pixelcount)
                 {
-					return 0;
-				}
-			}
-		}
-	} while (currentpixel < pixelcount);
+                    return 0;
+                }
+            }
+        }
+    } while (currentpixel < pixelcount);
     return 1;
 }

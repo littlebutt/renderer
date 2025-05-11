@@ -18,16 +18,10 @@
     <ClInclude Include="..\include\color.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\mesh.h">
-      <Filter>headers</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\reader.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="..\include\render.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\trans.h">
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="..\include\vector.h">
@@ -42,10 +36,7 @@
     <ClInclude Include="..\include\texture.h">
       <Filter>headers</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\shader.h">
-      <Filter>headers</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\light.h">
+    <ClInclude Include="..\include\model.h">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -56,13 +47,7 @@
     <ClCompile Include="..\src\main.c">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\mesh.c">
-      <Filter>source</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\reader.c">
-      <Filter>source</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\trans.c">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\src\vector.c">
@@ -71,7 +56,7 @@
     <ClCompile Include="..\src\vertex.c">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\win\render.c">
+    <ClCompile Include="..\win\render_win.c">
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\win\misc.c">
@@ -80,10 +65,10 @@
     <ClCompile Include="..\src\texture.c">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\light.c">
+    <ClCompile Include="..\src\render.c">
       <Filter>source</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\shader.c">
+    <ClCompile Include="..\src\model.c">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

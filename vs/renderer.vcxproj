@@ -135,30 +135,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\include\color.h" />
-    <ClInclude Include="..\include\light.h" />
-    <ClInclude Include="..\include\mesh.h" />
     <ClInclude Include="..\include\misc.h" />
+    <ClInclude Include="..\include\model.h" />
     <ClInclude Include="..\include\reader.h" />
     <ClInclude Include="..\include\render.h" />
-    <ClInclude Include="..\include\shader.h" />
     <ClInclude Include="..\include\texture.h" />
-    <ClInclude Include="..\include\trans.h" />
     <ClInclude Include="..\include\vector.h" />
     <ClInclude Include="..\include\vertex.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\color.c" />
-    <ClCompile Include="..\src\light.c" />
     <ClCompile Include="..\src\main.c" />
-    <ClCompile Include="..\src\mesh.c" />
+    <ClCompile Include="..\src\model.c" />
     <ClCompile Include="..\src\reader.c" />
-    <ClCompile Include="..\src\shader.c" />
+    <ClCompile Include="..\src\render.c" />
     <ClCompile Include="..\src\texture.c" />
-    <ClCompile Include="..\src\trans.c" />
     <ClCompile Include="..\src\vector.c" />
     <ClCompile Include="..\src\vertex.c" />
     <ClCompile Include="..\win\misc.c" />
-    <ClCompile Include="..\win\render.c" />
+    <ClCompile Include="..\win\render_win.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

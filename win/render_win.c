@@ -11,11 +11,12 @@ LRESULT CALLBACK __win_proc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch (msg)
     {
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        break;
-    default:
-        return DefWindowProc(hwnd, msg, wParam, lParam);
+        
+        case WM_DESTROY:
+            PostQuitMessage(0);
+            break;
+        default:
+            return DefWindowProc(hwnd, msg, wParam, lParam);
     }
     return 0;
 }
@@ -88,4 +89,10 @@ void render_free(render_ctx *ctx)
 {
     free(ctx->device);
     free(ctx);
+}
+
+void render_set_pixel(render_ctx *ctx, int x, int y,  color c)
+{
+    struct _device_ctx *dev = (struct _device_ctx *)ctx->device;
+    SetPixel(dev->sec, 50, 50, RGB(255 * c.r, 255 * c.g, 255 * c.b));
 }

@@ -3,6 +3,8 @@
 
 #include <stdlib.h>
 
+#include "color.h"
+
 typedef struct {
     int left;
     int top;
@@ -16,5 +18,9 @@ render_ctx *render_new(int left, int top, int width, int height);
 void render_loop(render_ctx *ctx);
 
 void render_free(render_ctx *ctx);
+
+void render_set_pixel(render_ctx *ctx, int x, int y, color c);
+
+void render_draw_line(render_ctx *ctx, int x0, int y0, int x1, int y1, color c);
 
 #endif // __RENDER_H__
