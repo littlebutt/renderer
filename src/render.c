@@ -1,4 +1,5 @@
 #include "render.h"
+#include "config.h"
 
 #include <math.h>
 
@@ -38,4 +39,44 @@ void render_draw_line(render_ctx *ctx, int x0, int y0, int x1, int y1, color c)
         }
     }
     
+}
+
+vector3 _render_barycentric(vector2 *pts, vector2 p)
+{
+    vector3 left = vector3_new(pts[2].x - pts[0].x, pts[1].x - pts[0].x, pts[0].x - p.x);
+    vector3 right = vector3_new(pts[2].y - pts[0].y, pts[1].y - pts[0].y, pts[0].y - p.y);
+    vector3 cross = vector3_cross(left, right);
+    if (abs(cross.z) < 1)
+    {
+        return vector3_new(-1., 1., 1.);
+    }
+    return vector3_new(1. - (cross.x + cross.y) / cross.z, cross.y / cross.z, cross.x / cross.z);
+}
+
+void render_draw_triangle(render_ctx* ctx, vector2* pts, color c)
+{
+    vector2 bbox_min = vector2_new(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+    vector2 bbox_max = vector2_new(0, 0);
+    vector2 clamp = vector2_new(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+    for (int i = 0; i < 3; i++)
+    {
+        bbox_min.x = max(0, min(bbox_min.x, pts[i].x));
+        bbox_min.y = max(0, min(bbox_min.y, pts[i].y));
+
+        bbox_max.x = min(clamp.x, max(bbox_max.x, pts[i].x));
+        bbox_max.y = min(clamp.y, max(bbox_max.y, pts[i].y));
+    }
+    vector2 p;
+    for (p.x = bbox_min.x; p.x <= bbox_max.x; p.x++)
+    {
+        for (p.y = bbox_min.y; p.y <= bbox_max.y; p.y++)
+        {
+            vector3 bc_screen = _render_barycentric(pts, p);
+            if (bc_screen.x < 0 || bc_screen.y < 0 || bc_screen.z < 0)
+            {
+                continue;
+            }
+            render_set_pixel(ctx, p.x, p.y, c);
+        }
+    }
 }

@@ -1,7 +1,5 @@
 #include "render.h"
 #include <windows.h>
-#include <stdint.h>
-#include <stdio.h>
 
 struct _device_ctx {
     HWND hwnd;
@@ -44,7 +42,7 @@ struct _device_ctx *_render_build_device(const int device_left, const int device
     HDC sec = GetDC((window));
     HDC pri = CreateCompatibleDC(sec);
 
-    BITMAPINFO bitmapInfo = {{sizeof(BITMAPINFOHEADER), device_width, -device_height, 1, 32, BI_RGB,
+    BITMAPINFO bitmapInfo = {{sizeof(BITMAPINFOHEADER), device_width, device_height, 1, 32, BI_RGB,
                               device_width * device_height * 4, 0, 0, 0, 0}};
     LPVOID ptr;
     HBITMAP bitmapHandler = CreateDIBSection(pri, &bitmapInfo, DIB_RGB_COLORS, &ptr, 0, 0);

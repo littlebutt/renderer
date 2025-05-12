@@ -135,6 +135,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\include\color.h" />
+    <ClInclude Include="..\include\config.h" />
     <ClInclude Include="..\include\misc.h" />
     <ClInclude Include="..\include\model.h" />
     <ClInclude Include="..\include\reader.h" />
