@@ -60,11 +60,11 @@ void render_draw_triangle(render_ctx* ctx, vector2* pts, color c)
     vector2 clamp = vector2_new(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
     for (int i = 0; i < 3; i++)
     {
-        bbox_min.x = max(0, min(bbox_min.x, pts[i].x));
-        bbox_min.y = max(0, min(bbox_min.y, pts[i].y));
+        bbox_min.x = fmax(0, fmin(bbox_min.x, pts[i].x));
+        bbox_min.y = fmax(0, fmin(bbox_min.y, pts[i].y));
 
-        bbox_max.x = min(clamp.x, max(bbox_max.x, pts[i].x));
-        bbox_max.y = min(clamp.y, max(bbox_max.y, pts[i].y));
+        bbox_max.x = fmin(clamp.x, fmax(bbox_max.x, pts[i].x));
+        bbox_max.y = fmin(clamp.y, fmax(bbox_max.y, pts[i].y));
     }
     vector2 p;
     for (p.x = bbox_min.x; p.x <= bbox_max.x; p.x++)

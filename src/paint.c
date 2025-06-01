@@ -39,7 +39,7 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
             vector3 n = vector3_cross((vector3_subtract(world_coords[2], world_coords[0])), (vector3_subtract(world_coords[1], world_coords[0])));
             n = vector3_normalize(n);
             float intensity = vector3_dot(n, p_ctx->l);
-            vector2 t[][3] = {screen_coords[0], screen_coords[1], screen_coords[2]};
+            vector2 t[3] = {screen_coords[0], screen_coords[1], screen_coords[2]};
             if (intensity > 0)
             {
                 render_draw_triangle(r_ctx, t,
@@ -48,4 +48,5 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
             
         }
     }
+    return 1;
 }
