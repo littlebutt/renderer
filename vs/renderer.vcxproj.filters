@@ -42,6 +42,12 @@
     <ClInclude Include="..\include\config.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\light.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\paint.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\color.c">
@@ -72,6 +78,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\src\model.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\paint.c">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

@@ -4,8 +4,7 @@
 #include <stdlib.h>
 
 #include "vertex.h"
-
-#define MAX_VERTEX_NUM 1 << 16
+#include "config.h"
 
 typedef struct
 {

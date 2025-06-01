@@ -136,8 +136,10 @@
   <ItemGroup>
     <ClInclude Include="..\include\color.h" />
     <ClInclude Include="..\include\config.h" />
+    <ClInclude Include="..\include\light.h" />
     <ClInclude Include="..\include\misc.h" />
     <ClInclude Include="..\include\model.h" />
+    <ClInclude Include="..\include\paint.h" />
     <ClInclude Include="..\include\reader.h" />
     <ClInclude Include="..\include\render.h" />
     <ClInclude Include="..\include\texture.h" />
@@ -148,6 +150,7 @@
     <ClCompile Include="..\src\color.c" />
     <ClCompile Include="..\src\main.c" />
     <ClCompile Include="..\src\model.c" />
+    <ClCompile Include="..\src\paint.c" />
     <ClCompile Include="..\src\reader.c" />
     <ClCompile Include="..\src\render.c" />
     <ClCompile Include="..\src\texture.c" />

@@ -5,5 +5,7 @@
 #define SCREEN_WIDTH 500
 #define SCREEN_TOP 200
 #define SCREEN_LEFT 200
+#define MAX_VERTEX_NUM 1 << 16
+#define MAX_MODLE_NUM  5
 
 #endif // __CONFIG_H
