@@ -1,5 +1,6 @@
 #include "paint.h"
 #include <string.h>
+#include <float.h>
 
 #define OFFSET_COORD(a) (a) * 200 + 250
 
@@ -42,8 +43,12 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
             vector2 t[3] = {screen_coords[0], screen_coords[1], screen_coords[2]};
             if (intensity > 0)
             {
-                render_draw_triangle(r_ctx, t,
-                                 color_new(intensity * 1.0f, intensity * 1.0f, intensity * 1.0f, 1.0f));
+                float zbuffer[SCREEN_HEIGHT * SCREEN_WIDTH] = {-FLT_MAX};
+                render_draw_triangle_with_buffer(
+                    r_ctx, world_coords, zbuffer,
+                    color_new(intensity * 1.0f, intensity * 1.0f, intensity * 1.0f, 1.0f));
+                /*render_draw_triangle(r_ctx, t,
+                                 color_new(intensity * 1.0f, intensity * 1.0f, intensity * 1.0f, 1.0f));*/
             }
             
         }
