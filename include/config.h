@@ -7,5 +7,6 @@
 #define SCREEN_LEFT 200
 #define MAX_VERTEX_NUM 1 << 16
 #define MAX_MODLE_NUM  5
+#define EPSILON        1e-1f
 
 #endif // __CONFIG_H

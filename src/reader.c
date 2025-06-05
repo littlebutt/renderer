@@ -141,7 +141,7 @@ static int _process_v(_process_ctx *ctx, _split_items *items)
 
 static int _process_vt(_process_ctx *ctx, _split_items *items)
 {
-    vector2 _v = vector2_new(atof(items->item[1]), atof(items->item[2]));
+    vector2 _v = vector2_new(atof(items->item[2]), atof(items->item[3]));
     if (ctx->uv == NULL)
     {
         ctx->uv = (_vector2_list *)malloc(sizeof(_vector2_list));
@@ -352,7 +352,7 @@ model *read_obj(char *filename)
     vertex_list *vertices = (vertex_list *)ctx->vertices;
     _process_ctx_free(ctx);
     fclose(fp);
-    return model_new(vertices, ctx->nvertpf);
+    return model_new(vertices, ctx->nvertpf, NULL);
 }
 
 #pragma pack(push, 1)
@@ -480,7 +480,7 @@ int _tga_load_rle_data(FILE *fp, unsigned char *data, unsigned long width, unsig
 
 texture *read_tga(char *filename)
 {
-    FILE *fp = fopen(filename, "r");
+    FILE *fp = fopen(filename, "rb");
     if (fp == NULL)
     {
         return NULL;
@@ -518,7 +518,15 @@ texture *read_tga(char *filename)
         fclose(fp);
         return NULL;
     }
-    memcpy(res->data, data, nbytes);
+    int bytespp = tga_header.th_bitsperpixel >> 3;
+    for (unsigned long i = 0; i < res->width * res->height; i++)
+    {
+        unsigned char *src = &data[i * bytespp];
+        res->data[i].r = src[2] / 255.0f; // BGR -> RGB
+        res->data[i].g = src[1] / 255.0f;
+        res->data[i].b = src[0] / 255.0f;
+        res->data[i].a = (bytespp == 4) ? (src[3] / 255.0f) : 1.0f;
+    }
     fclose(fp);
     return res;
 }

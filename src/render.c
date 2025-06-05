@@ -121,16 +121,72 @@ void render_draw_triangle_with_buffer(render_ctx* ctx, vector3* pts, float* zbuf
             {
                 continue;
             }
-            //p.z = 0;
-            //p.z += pts[0].z * bc_screen.x;
-            //p.z += pts[1].z * bc_screen.y;
-            //p.z += pts[2].z * bc_screen.z;
-            //if (zbuf[(int)(p.x + p.y * SCREEN_WIDTH)] < p.z)
-            //{
-            //    zbuf[(int)(p.x + p.y * SCREEN_WIDTH)] = p.z;
-            //    //render_set_pixel(ctx, p.x, p.y, c);
-            //}
-            render_set_pixel(ctx, p.x, p.y, c);
+            p.z = 0;
+            p.z += pts[0].z * bc_screen.x;
+            p.z += pts[1].z * bc_screen.y;
+            p.z += pts[2].z * bc_screen.z;
+            if (zbuf[(int)(p.x + p.y * SCREEN_WIDTH)] < p.z)
+            {
+                zbuf[(int)(p.x + p.y * SCREEN_WIDTH)] = p.z;
+                render_set_pixel(ctx, p.x, p.y, c);
+            }
+        }
+    }
+}
+
+void _render_get_uv(vector3* pts, vector2* uvs, float x, float y, float* u, float* v)
+{
+    float denom = (pts[1].y - pts[2].y) * (pts[0].x - pts[2].x) +
+                  (pts[2].x - pts[1].x) * (pts[0].y - pts[2].y);
+    float lambda0 =
+        ((pts[1].y - pts[2].y) * (x - pts[2].x) + (pts[2].x - pts[1].x) * (y - pts[2].y)) / denom;
+    float lambda1 =
+        ((pts[2].y - pts[0].y) * (x - pts[2].x) + (pts[0].x - pts[2].x) * (y - pts[2].y)) / denom;
+    float lambda2 = 1.0f - lambda0 - lambda1;
+    *u = lambda0 * uvs[0].x + lambda1 * uvs[1].x + lambda2 * uvs[2].x;
+    *v = lambda0 * uvs[0].y + lambda1 * uvs[1].y + lambda2 * uvs[2].y;
+}
+
+void render_draw_triangle_with_buffer_and_texture(render_ctx *ctx, vector3 *pts, vector2 *uvs,
+                                                  float *zbuf, texture *tex)
+{
+    vector2 bbox_min = vector2_new(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+    vector2 bbox_max = vector2_new(0, 0);
+    vector2 clamp = vector2_new(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+    for (int i = 0; i < 3; i++)
+    {
+        bbox_min.x = fmax(0, fmin(bbox_min.x, pts[i].x));
+        bbox_min.y = fmax(0, fmin(bbox_min.y, pts[i].y));
+
+        bbox_max.x = fmin(clamp.x, fmax(bbox_max.x, pts[i].x));
+        bbox_max.y = fmin(clamp.y, fmax(bbox_max.y, pts[i].y));
+    }
+    vector3 p;
+    for (p.x = bbox_min.x; p.x <= bbox_max.x; p.x++)
+    {
+        for (p.y = bbox_min.y; p.y <= bbox_max.y; p.y++)
+        {
+            vector3 bc_screen = _render_barycentric2(pts, p.x, p.y);
+            if (bc_screen.x < -EPSILON || bc_screen.y < -EPSILON || bc_screen.z < -EPSILON)
+            {
+                continue;
+            }
+             p.z = 0;
+             p.z += pts[0].z * bc_screen.x;
+             p.z += pts[1].z * bc_screen.y;
+             p.z += pts[2].z * bc_screen.z;
+             float u, v;
+             _render_get_uv(pts, uvs, p.x, p.y, &u, &v);
+             color c = texture_sample(tex, u, v);
+             render_set_pixel(ctx, p.x, p.y, c);
+             /*if (zbuf[(int)(p.x + p.y * SCREEN_WIDTH)] < p.z)
+            {
+                zbuf[(int)(p.x + p.y * SCREEN_WIDTH)] = p.z;
+                float u, v;
+                _render_get_uv(pts, uvs, p.x, p.y, &u, &v);
+                color c = texture_sample(tex, u, v);
+                 render_set_pixel(ctx, p.x, p.y, c);
+             }*/
         }
     }
 }

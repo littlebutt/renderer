@@ -1,6 +1,6 @@
 #include "model.h"
 
-model *model_new(vertex_list *vl, int nvertpf)
+model *model_new(vertex_list *vl, int nvertpf, texture *tex)
 {
     model *m = (model *)malloc(sizeof(model));
     vertex_list *pvl = vl;
@@ -12,6 +12,7 @@ model *model_new(vertex_list *vl, int nvertpf)
     }
     m->vert_len = vn;
     m->nvertpf = nvertpf;
+    m->tex = tex;
     return m;
 }
 

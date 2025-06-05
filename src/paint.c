@@ -27,6 +27,7 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
         {
             vector2 screen_coords[3];
             vector3 world_coords[3];
+            vector2 uv_coords[3];
             for (int k = 0; k < 3; k++)
             {
                 vector3 v =
@@ -36,19 +37,20 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
                 screen_coords[k] = vector2_new((v.x),
                                                (v.y));
                 world_coords[k] = v;
+                uv_coords[k] = vector2_new(model->verts[i * model->nvertpf + k].uv.x,
+                                           model->verts[i * model->nvertpf + k].uv.y);
             }
             vector3 n = vector3_cross((vector3_subtract(world_coords[2], world_coords[0])), (vector3_subtract(world_coords[1], world_coords[0])));
             n = vector3_normalize(n);
             float intensity = vector3_dot(n, p_ctx->l);
-            vector2 t[3] = {screen_coords[0], screen_coords[1], screen_coords[2]};
             if (intensity > 0)
             {
                 float zbuffer[SCREEN_HEIGHT * SCREEN_WIDTH] = {-FLT_MAX};
-                render_draw_triangle_with_buffer(
+                render_draw_triangle_with_buffer_and_texture(r_ctx, world_coords, uv_coords,
+                                                             zbuffer, model->tex);
+                /*render_draw_triangle_with_buffer(
                     r_ctx, world_coords, zbuffer,
-                    color_new(intensity * 1.0f, intensity * 1.0f, intensity * 1.0f, 1.0f));
-                /*render_draw_triangle(r_ctx, t,
-                                 color_new(intensity * 1.0f, intensity * 1.0f, intensity * 1.0f, 1.0f));*/
+                    color_new(intensity * 1.0f, intensity * 1.0f, intensity * 1.0f, 1.0f));*/
             }
             
         }
