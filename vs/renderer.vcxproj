@@ -137,6 +137,7 @@
     <ClInclude Include="..\include\color.h" />
     <ClInclude Include="..\include\config.h" />
     <ClInclude Include="..\include\light.h" />
+    <ClInclude Include="..\include\matrix.h" />
     <ClInclude Include="..\include\misc.h" />
     <ClInclude Include="..\include\model.h" />
     <ClInclude Include="..\include\paint.h" />
@@ -149,6 +150,7 @@
   <ItemGroup>
     <ClCompile Include="..\src\color.c" />
     <ClCompile Include="..\src\main.c" />
+    <ClCompile Include="..\src\matrix.c" />
     <ClCompile Include="..\src\model.c" />
     <ClCompile Include="..\src\paint.c" />
     <ClCompile Include="..\src\reader.c" />

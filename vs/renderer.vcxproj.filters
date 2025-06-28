@@ -48,6 +48,9 @@
     <ClInclude Include="..\include\paint.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\matrix.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\color.c">
@@ -81,6 +84,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\src\paint.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\matrix.c">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>
