@@ -42,7 +42,7 @@ float* matrix_row(matrix m, int row)
     return m.m + row * m.cols;
 }
 
-matrix matrix_multiply(matrix m, matrix value, int mrows, int mcols, int vrows, int vcols)
+matrix matrix_multiply(matrix m, matrix value, int mrows, int mcols, int vrows, int vcols) // mcols == vrows
 {
     matrix result = matrix_new(mrows, vcols); 
     for (int i = 0; i < mrows; i++)
