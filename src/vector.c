@@ -107,3 +107,5 @@ vector3 vector3_normalize(vector3 a)
     float ssm = sqrt(sm);
     return vector3_divide(a, ssm);
 }
+
+float vector3_norm(vector3 a) { return sqrt(a.x * a.x + a.y * a.y + a.z * a.z); }

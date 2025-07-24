@@ -134,6 +134,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\camera.h" />
     <ClInclude Include="..\include\color.h" />
     <ClInclude Include="..\include\config.h" />
     <ClInclude Include="..\include\light.h" />
@@ -148,6 +149,7 @@
     <ClInclude Include="..\include\vertex.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\camera.c" />
     <ClCompile Include="..\src\color.c" />
     <ClCompile Include="..\src\main.c" />
     <ClCompile Include="..\src\matrix.c" />

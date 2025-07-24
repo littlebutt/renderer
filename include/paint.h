@@ -5,6 +5,7 @@
 #include "light.h"
 #include "matrix.h"
 #include "render.h"
+#include "camera.h"
 
 typedef struct
 {

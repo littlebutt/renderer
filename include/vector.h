@@ -29,5 +29,6 @@ float vector3_dot(vector3 a, vector3 b);
 vector3 vector3_cross(vector3 a, vector3 b);
 vector3 vector3_lerp(vector3 a, vector3 b, float t);
 vector3 vector3_normalize(vector3 a);
+float vector3_norm(vector3 a);
 
 #endif // __VECTOR_H__
