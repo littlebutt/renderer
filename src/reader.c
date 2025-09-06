@@ -66,7 +66,6 @@ typedef struct {
     _vector3_list *norm;
     _vector2_list *uv;
     _vertex_list *vertices;
-    int nvertpf;
 } _process_ctx;
 
 static _process_ctx *_process_ctx_new()
@@ -80,7 +79,6 @@ static _process_ctx *_process_ctx_new()
     ctx->norm = NULL;
     ctx->uv = NULL;
     ctx->vertices = NULL;
-    ctx->nvertpf = 0;
     return ctx;
 }
 
@@ -218,12 +216,20 @@ int _get_vector2(_vector2_list *list, int idx, vector2 **res)
 
 int _process_f(_process_ctx *ctx, _split_items *items)
 {
-    ctx->nvertpf = items->len - 1;
-    for (size_t i = 1; i < items->len; i++)
+    // 确保是三角形面
+    if (items->len != 4) {  // f v1/vt1/vn1 v2/vt2/vn2 v3/vt3/vn3
+        return 0;
+    }
+    
+    // 处理三个顶点
+    for (size_t i = 1; i <= 3; i++)
     {
         char *_tmp = items->item[i];
         _split_items *_tmp_items = _split_string(_tmp, strlen(_tmp), '/');
-        assert(_tmp_items->len == 3);
+        if (_tmp_items->len != 3) {
+            return 0;
+        }
+        
         vector3 *pos = NULL;
         if (_get_vector3(ctx->pos, atoi(_tmp_items->item[0]) - 1, &pos) == 0)
         {
@@ -239,7 +245,10 @@ int _process_f(_process_ctx *ctx, _split_items *items)
         {
             return 0;
         }
+        
         vertex _v = vertex_new(*pos, *norm, *uv);
+        
+        // 添加到顶点列表
         if (ctx->vertices == NULL)
         {
             ctx->vertices = (_vertex_list *)malloc(sizeof(_vertex_list));
@@ -258,6 +267,10 @@ int _process_f(_process_ctx *ctx, _split_items *items)
                 p = p->next;
             }
             p->next = (_vertex_list *)malloc(sizeof(_vertex_list));
+            if (p->next == NULL)
+            {
+                return 0;
+            }
             p->next->v = _v;
             p->next->next = NULL;
         }
@@ -352,7 +365,7 @@ model *read_obj(char *filename)
     vertex_list *vertices = (vertex_list *)ctx->vertices;
     _process_ctx_free(ctx);
     fclose(fp);
-    return model_new(vertices, ctx->nvertpf, NULL);
+    return model_new(vertices, NULL);
 }
 
 #pragma pack(push, 1)

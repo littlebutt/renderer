@@ -121,13 +121,14 @@ void render_draw_triangle_with_buffer(render_ctx* ctx, vector3* pts, float* zbuf
             {
                 continue;
             }
-            p.z = 0;
-            p.z += pts[0].z * bc_screen.x;
-            p.z += pts[1].z * bc_screen.y;
-            p.z += pts[2].z * bc_screen.z;
-            if (zbuf[(int)(p.x + p.y * SCREEN_WIDTH)] < p.z)
+            // 计算插值后的z值
+            float z = pts[0].z * bc_screen.x + pts[1].z * bc_screen.y + pts[2].z * bc_screen.z;
+            
+            // 检查深度（z值越小表示越近）
+            int idx = (int)(p.x + p.y * SCREEN_WIDTH);
+            if (zbuf[idx] > z)  // 改为 > 比较，这样近处的像素会覆盖远处的
             {
-                zbuf[(int)(p.x + p.y * SCREEN_WIDTH)] = p.z;
+                zbuf[idx] = z;  // 更新z-buffer
                 render_set_pixel(ctx, p.x, p.y, c);
             }
         }
@@ -171,13 +172,14 @@ void render_draw_triangle_with_buffer_and_texture(render_ctx *ctx, vector3 *pts,
             {
                 continue;
             }
-             p.z = 0;
-             p.z += pts[0].z * bc_screen.x;
-             p.z += pts[1].z * bc_screen.y;
-             p.z += pts[2].z * bc_screen.z;
-             if (zbuf[(int)(p.x + p.y * SCREEN_WIDTH)] < p.z)
+             // 计算插值后的z值
+             float z = pts[0].z * bc_screen.x + pts[1].z * bc_screen.y + pts[2].z * bc_screen.z;
+             
+             // 检查深度（z值越小表示越近）
+             int idx = (int)(p.x + p.y * SCREEN_WIDTH);
+             if (zbuf[idx] > z)  // 改为 > 比较，这样近处的像素会覆盖远处的
              {
-                 zbuf[(int)(p.x + p.y * SCREEN_WIDTH)] = p.z;
+                 zbuf[idx] = z;  // 更新z-buffer
                  float u, v;
                  _render_get_uv(pts, uvs, p.x, p.y, &u, &v);
                  color c = texture_sample(tex, u, v);

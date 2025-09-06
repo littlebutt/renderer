@@ -1,9 +1,8 @@
-#include "paint.h"
 #include <string.h>
 #include <float.h>
 #define _USE_MATH_DEFINES
 #include <math.h>
-
+#include <paint.h>
 #define OFFSET_COORD(a) (a) * 200 + 250
 
 paint_ctx* paint_new(model *model_, size_t model_num, light l, vector3 camera)
@@ -92,39 +91,80 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
     for (int j = 0; j < 1; j++)
     {
         model *model = p_ctx->models[j];
+        // 创建全局zbuffer，避免每个三角形都创建一个新的
+        static float zbuffer[SCREEN_HEIGHT * SCREEN_WIDTH];
+        memset(zbuffer, 0, sizeof(zbuffer));
+        for (size_t i = 0; i < SCREEN_HEIGHT * SCREEN_WIDTH; i++) {
+            zbuffer[i] = FLT_MAX;
+        }
+
         size_t nfaces = model_nfaces(model);
         for (int i = 0; i < nfaces; i++)
         {
+            face f = model->faces[i];
             vector3 screen_coords[3];
             vector3 world_coords[3];
             vector2 uv_coords[3];
+            
+            // 处理每个面的三个顶点
             for (int k = 0; k < 3; k++)
             {
-                // 保持原始坐标，让模型视图矩阵处理变换
+                int vertex_idx = f.vertex_indices[k];
+                vertex v_data = model->verts[vertex_idx];
+                
+                // 获取原始世界坐标（用于计算法线）
+                world_coords[k] = v_data.pos;
+                
+                // 转换坐标进行渲染，注意y和z轴的反向
                 vector3 v = vector3_new(
-                    model->verts[i * model->nvertpf + k].pos.x,
-                    model->verts[i * model->nvertpf + k].pos.y * -1,
-                    model->verts[i * model->nvertpf + k].pos.z * -1);
+                    v_data.pos.x,
+                    v_data.pos.y * -1,
+                    v_data.pos.z * -1);
+                
+                // MVP变换
                 matrix _v = v2m(v);
                 matrix _p = matrix_multiply(modelview, _v, 4, 4, 4, 1);
                 matrix _m = matrix_multiply(projection, _p, 4, 4, 4, 1);
                 matrix _r = matrix_multiply(viewport_, _m, 4, 4, 4, 1);
+                
                 screen_coords[k] = m2v(_r);
-                world_coords[k] = v;
-                uv_coords[k] = vector2_new(model->verts[i * model->nvertpf + k].uv.x,
-                                           model->verts[i * model->nvertpf + k].uv.y);
+                uv_coords[k] = v_data.uv;
             }
-            vector3 n = vector3_cross((vector3_subtract(world_coords[2], world_coords[0])), (vector3_subtract(world_coords[1], world_coords[0])));
-            n = vector3_normalize(n);
-            float intensity = vector3_dot(n, p_ctx->l);
-            if (intensity > 0)
+
+            // 使用变换后的坐标计算法线（考虑y和z轴反转）
+            vector3 transformed_coords[3];
+            for (int k = 0; k < 3; k++) {
+                transformed_coords[k] = vector3_new(
+                    world_coords[k].x,
+                    world_coords[k].y * -1,  // 与渲染坐标系一致
+                    world_coords[k].z * -1   // 与渲染坐标系一致
+                );
+            }
+            
+            // 计算法线（注意叉积顺序，确保法线朝外）
+            vector3 edge1 = vector3_subtract(transformed_coords[2], transformed_coords[0]);
+            vector3 edge2 = vector3_subtract(transformed_coords[1], transformed_coords[0]);
+            vector3 n = vector3_normalize(vector3_cross(edge1, edge2));  // 反转叉积顺序
+            
+            // 计算面的中心点（使用变换后的坐标）
+            vector3 face_center = vector3_new(
+                (transformed_coords[0].x + transformed_coords[1].x + transformed_coords[2].x) / 3.0f,
+                (transformed_coords[0].y + transformed_coords[1].y + transformed_coords[2].y) / 3.0f,
+                (transformed_coords[0].z + transformed_coords[1].z + transformed_coords[2].z) / 3.0f
+            );
+            
+            // 计算从面中心指向eye的向量
+            vector3 view_dir = vector3_subtract(eye, face_center);
+            view_dir = vector3_normalize(view_dir);
+            
+            // 计算光照强度（使用视线方向作为光照方向）
+            float intensity = vector3_dot(n, view_dir);
+            
+            // 背面剔除：只渲染朝向视点的面
+            if (intensity > EPSILON)  // 使用正的EPSILON确保只渲染正面
             {
-                float zbuffer[SCREEN_HEIGHT * SCREEN_WIDTH] = {-FLT_MAX};
                 render_draw_triangle_with_buffer_and_texture(r_ctx, screen_coords, uv_coords,
-                                                             zbuffer, model->tex);
-                /*render_draw_triangle_with_buffer(
-                    r_ctx, world_coords, zbuffer,
-                    color_new(intensity * 1.0f, intensity * 1.0f, intensity * 1.0f, 1.0f));*/
+                                                           zbuffer, model->tex);
             }
             
         }
