@@ -23,13 +23,19 @@ paint_ctx* paint_new(model *model_, size_t model_num, light l, vector3 camera)
 matrix _calculate_viewport(int x, int y, int w, int h, int depth)
 {
     matrix m = matrix_identity(4);
-    m.m[0][3] = x + w / 2.f;
-    m.m[1][3] = y + h / 2.f;
-    m.m[2][3] = depth / 2.f;
-
-    m.m[0][0] = w / 2.f;
-    m.m[1][1] = h / 2.f;
-    m.m[2][2] = depth / 2.f;
+    
+    // 使用较小的缩放来避免图像太大
+    float scale = fminf(w, h) / 4.0f;
+    
+    // 缩放
+    m.m[0][0] = scale;
+    m.m[1][1] = scale;
+    m.m[2][2] = depth / 2.0f;
+    
+    // 中心偏移
+    m.m[0][3] = x + w / 2.0f;
+    m.m[1][3] = y + h / 2.0f;
+    m.m[2][3] = depth / 2.0f;
     return m;
 }
 
@@ -58,12 +64,31 @@ int _calculate_camera(paint_ctx *p_ctx, matrix *projection, matrix *viewport)
 
 int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
 {
-    vector3 eye = vector3_new(1, 1, 3);
-    vector3 center = vector3_new(0, 0, 0);
-    matrix modelview = lookat(eye, center, vector3_new(0, 1, 0));
+    // 设置相机位置在模型正前方，稍微往后一些
+    vector3 eye = vector3_new(1, 2, 3);  // 相机位置
+    vector3 center = vector3_new(0, 0, 0);  // 看向原点
+    vector3 up = vector3_new(0, 1, 0);  // Y轴向上
+    
+    // 计算正确的观察矩阵
+    matrix modelview = lookat(eye, center, up);
+
+    
+    // 设置透视投影矩阵
     matrix projection = matrix_identity(4);
-    matrix viewport_ = viewport(-250, -250, SCREEN_WIDTH * 3 / 4, SCREEN_HEIGHT * 3 / 4);
-    projection.m[3][2] = -1.f / vector3_norm(vector3_subtract(eye, center));
+    float fov = 45.0f * M_PI / 180.0f;  // 45度视角
+    float aspect = (float)SCREEN_WIDTH / SCREEN_HEIGHT;
+    float znear = 0.1f;
+    float zfar = 100.0f;
+    
+    //projection.m[0][0] = 1.0f / (aspect * tanf(fov/2.0f));
+    //projection.m[1][1] = 1.0f / tanf(fov/2.0f);
+    //projection.m[2][2] = -(zfar + znear) / (zfar - znear);
+    //projection.m[2][3] = -2.0f * zfar * znear / (zfar - znear);
+    projection.m[3][2] = -1.0f / vector3_norm(vector3_subtract(eye, center));
+    //projection.m[3][3] = 0.0f;
+    
+    // 设置视口变换（使用全屏幕，不偏移）
+    matrix viewport_ = viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     for (int j = 0; j < 1; j++)
     {
         model *model = p_ctx->models[j];
@@ -75,10 +100,11 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
             vector2 uv_coords[3];
             for (int k = 0; k < 3; k++)
             {
-                vector3 v =
-                    vector3_new(OFFSET_COORD(model->verts[i * model->nvertpf + k].pos.x),
-                                OFFSET_COORD(model->verts[i * model->nvertpf + k].pos.y * -1),
-                                OFFSET_COORD(model->verts[i * model->nvertpf + k].pos.z * -1));
+                // 保持原始坐标，让模型视图矩阵处理变换
+                vector3 v = vector3_new(
+                    model->verts[i * model->nvertpf + k].pos.x,
+                    model->verts[i * model->nvertpf + k].pos.y * -1,
+                    model->verts[i * model->nvertpf + k].pos.z * -1);
                 matrix _v = v2m(v);
                 matrix _p = matrix_multiply(modelview, _v, 4, 4, 4, 1);
                 matrix _m = matrix_multiply(projection, _p, 4, 4, 4, 1);
