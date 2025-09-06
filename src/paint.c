@@ -64,7 +64,7 @@ int _calculate_camera(paint_ctx *p_ctx, matrix *projection, matrix *viewport)
 int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
 {
     // 设置相机位置在模型正前方，稍微往后一些
-    vector3 eye = vector3_new(1, 2, 3);  // 相机位置
+    vector3 eye = vector3_new(-2, 1, 2);  // 相机位置
     vector3 center = vector3_new(0, 0, 0);  // 看向原点
     vector3 up = vector3_new(0, 1, 0);  // Y轴向上
     
@@ -81,13 +81,13 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
     
     //projection.m[0][0] = 1.0f / (aspect * tanf(fov/2.0f));
     //projection.m[1][1] = 1.0f / tanf(fov/2.0f);
-    //projection.m[2][2] = -(zfar + znear) / (zfar - znear);
-    //projection.m[2][3] = -2.0f * zfar * znear / (zfar - znear);
+    projection.m[2][2] = -(zfar + znear) / (zfar - znear);
+    projection.m[2][3] = -2.0f * zfar * znear / (zfar - znear);
     projection.m[3][2] = -1.0f / vector3_norm(vector3_subtract(eye, center));
     //projection.m[3][3] = 0.0f;
     
     // 设置视口变换（使用全屏幕，不偏移）
-    matrix viewport_ = viewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+    matrix viewport_ = viewport(0, 0, SCREEN_WIDTH , SCREEN_HEIGHT);
     for (int j = 0; j < 1; j++)
     {
         model *model = p_ctx->models[j];
@@ -161,10 +161,11 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
             float intensity = vector3_dot(n, view_dir);
             
             // 背面剔除：只渲染朝向视点的面
-            if (intensity > EPSILON)  // 使用正的EPSILON确保只渲染正面
+            if (intensity > 0)
             {
-                render_draw_triangle_with_buffer_and_texture(r_ctx, screen_coords, uv_coords,
-                                                           zbuffer, model->tex);
+                render_draw_triangle_with_buffer_and_texture(r_ctx, screen_coords, uv_coords, zbuffer, model->tex);
+                //render_draw_triangle_with_buffer(r_ctx, screen_coords, zbuffer,
+                //                                 color_new(255.0, 0.0, 0.0, 0.0));
             }
             
         }

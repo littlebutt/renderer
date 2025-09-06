@@ -66,6 +66,9 @@ typedef struct {
     _vector3_list *norm;
     _vector2_list *uv;
     _vertex_list *vertices;
+    face *faces;        // 面数组
+    size_t face_count;  // 面计数
+    size_t vert_count;  // 顶点计数
 } _process_ctx;
 
 static _process_ctx *_process_ctx_new()
@@ -79,6 +82,9 @@ static _process_ctx *_process_ctx_new()
     ctx->norm = NULL;
     ctx->uv = NULL;
     ctx->vertices = NULL;
+    ctx->faces = (face *)malloc(sizeof(face) * MAX_FACE_NUM);
+    ctx->face_count = 0;
+    ctx->vert_count = 0;
     return ctx;
 }
 
@@ -221,60 +227,73 @@ int _process_f(_process_ctx *ctx, _split_items *items)
         return 0;
     }
     
+    // 创建新的面
+    face f;
+    vector3 face_normal = vector3_new(0, 0, 0);
+    int vert_indices[3];
+    
     // 处理三个顶点
-    for (size_t i = 1; i <= 3; i++)
+    for (int i = 0; i < 3; i++)
     {
-        char *_tmp = items->item[i];
+        char *_tmp = items->item[i + 1];
         _split_items *_tmp_items = _split_string(_tmp, strlen(_tmp), '/');
         if (_tmp_items->len != 3) {
             return 0;
         }
         
+        // 获取顶点索引（注意.obj文件中的索引从1开始）
+        int v_idx = atoi(_tmp_items->item[0]) - 1;
+        int vt_idx = atoi(_tmp_items->item[1]) - 1;
+        int vn_idx = atoi(_tmp_items->item[2]) - 1;
+        
         vector3 *pos = NULL;
-        if (_get_vector3(ctx->pos, atoi(_tmp_items->item[0]) - 1, &pos) == 0)
-        {
-            return 0;
-        }
         vector2 *uv = NULL;
-        if (_get_vector2(ctx->uv, atoi(_tmp_items->item[1]) - 1, &uv) == 0)
-        {
-            return 0;
-        }
         vector3 *norm = NULL;
-        if (_get_vector3(ctx->norm, atoi(_tmp_items->item[2]) - 1, &norm) == 0)
-        {
+        
+        if (_get_vector3(ctx->pos, v_idx, &pos) == 0 ||
+            _get_vector2(ctx->uv, vt_idx, &uv) == 0 ||
+            _get_vector3(ctx->norm, vn_idx, &norm) == 0) {
             return 0;
         }
         
+        // 创建顶点
         vertex _v = vertex_new(*pos, *norm, *uv);
+        vert_indices[i] = ctx->vert_count++;
         
         // 添加到顶点列表
-        if (ctx->vertices == NULL)
-        {
+        if (ctx->vertices == NULL) {
             ctx->vertices = (_vertex_list *)malloc(sizeof(_vertex_list));
-            if (ctx->vertices == NULL)
-            {
-                return 0;
-            }
+            if (!ctx->vertices) return 0;
             ctx->vertices->v = _v;
             ctx->vertices->next = NULL;
-        }
-        else
-        {
+        } else {
             _vertex_list *p = ctx->vertices;
-            while (p->next != NULL)
-            {
-                p = p->next;
-            }
+            while (p->next) p = p->next;
             p->next = (_vertex_list *)malloc(sizeof(_vertex_list));
-            if (p->next == NULL)
-            {
-                return 0;
-            }
+            if (!p->next) return 0;
             p->next->v = _v;
             p->next->next = NULL;
         }
+        
+        face_normal = vector3_add(face_normal, *norm);
     }
+    
+    // 设置面的顶点索引
+    f.vertex_indices[0] = vert_indices[0];
+    f.vertex_indices[1] = vert_indices[1];
+    f.vertex_indices[2] = vert_indices[2];
+    
+    // 计算面法线（使用顶点法线的平均）
+    f.normal = face_normal;
+    f.normal = f.normal;
+    f.normal = vector3_normalize(f.normal);
+    
+    // 保存面
+    if (ctx->face_count >= MAX_FACE_NUM) {
+        return 0;
+    }
+    ctx->faces[ctx->face_count++] = f;
+    
     return 1;
 }
 
@@ -362,10 +381,18 @@ model *read_obj(char *filename)
 
         free(buffer);
     }
-    vertex_list *vertices = (vertex_list *)ctx->vertices;
+    model* m = model_new((vertex_list*)ctx->vertices, NULL);
+    
+    // 复制面数据到模型
+    memcpy(m->faces, ctx->faces, sizeof(face) * ctx->face_count);
+    m->face_len = ctx->face_count;
+    
+    // 释放临时数据
+    free(ctx->faces);
     _process_ctx_free(ctx);
     fclose(fp);
-    return model_new(vertices, NULL);
+    
+    return m;
 }
 
 #pragma pack(push, 1)
