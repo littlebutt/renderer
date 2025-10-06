@@ -144,6 +144,7 @@
     <ClInclude Include="..\include\paint.h" />
     <ClInclude Include="..\include\reader.h" />
     <ClInclude Include="..\include\render.h" />
+    <ClInclude Include="..\include\shader.h" />
     <ClInclude Include="..\include\texture.h" />
     <ClInclude Include="..\include\vector.h" />
     <ClInclude Include="..\include\vertex.h" />
@@ -157,6 +158,7 @@
     <ClCompile Include="..\src\paint.c" />
     <ClCompile Include="..\src\reader.c" />
     <ClCompile Include="..\src\render.c" />
+    <ClCompile Include="..\src\shader.c" />
     <ClCompile Include="..\src\texture.c" />
     <ClCompile Include="..\src\vector.c" />
     <ClCompile Include="..\src\vertex.c" />

@@ -5,6 +5,8 @@
 #include <paint.h>
 #define OFFSET_COORD(a) (a) * 200 + 250
 
+
+
 paint_ctx* paint_new(model *model_, size_t model_num, light l, vector3 camera)
 {
     paint_ctx *ctx = (paint_ctx *)malloc(sizeof(paint_ctx) + sizeof(model *) * model_num);
@@ -50,17 +52,17 @@ matrix v2m(vector3 v)
     return m;
 }
 
-int _calculate_camera(paint_ctx *p_ctx, matrix *projection, matrix *viewport)
-{
-    *projection = matrix_identity(4);
-    *viewport = _calculate_viewport(-250, -250, SCREEN_WIDTH * 3 / 4, SCREEN_HEIGHT * 3 / 4, BUFFER_DEPTH);
-    projection->m[3][2] = 1.f / p_ctx->camera.z;
-    return 1;
-}
+//int _calculate_camera(paint_ctx *p_ctx, matrix *projection, matrix *viewport)
+//{
+//    *projection = matrix_identity(4);
+//    *viewport = _calculate_viewport(-250, -250, SCREEN_WIDTH * 3 / 4, SCREEN_HEIGHT * 3 / 4, BUFFER_DEPTH);
+//    projection->m[3][2] = 1.f / p_ctx->camera.z;
+//    return 1;
+//}
 
 int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
 {
-    vector3 eye = vector3_new(-2, 1, 2);
+    vector3 eye = p_ctx->camera;
     vector3 center = vector3_new(0, 0, 0); 
     vector3 up = vector3_new(0, 1, 0);
     
@@ -90,6 +92,8 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
             zbuffer[i] = FLT_MAX;
         }
 
+        shader *gouraud_shader = make_gouraud_shader();
+        vector3 *varying_intensity = (vector3 *)malloc(sizeof(vector3));
         size_t nfaces = model_nfaces(model);
         for (int i = 0; i < nfaces; i++)
         {
@@ -116,7 +120,9 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
                 matrix _m = matrix_multiply(projection, _p, 4, 4, 4, 1);
                 matrix _r = matrix_multiply(viewport_, _m, 4, 4, 4, 1);
                 
-                screen_coords[k] = m2v(_r);
+                vector3 __r = gouraud_shader->vfunc(i, k, model, modelview, projection, viewport_,
+                                      p_ctx->l, varying_intensity);
+                screen_coords[k] = __r;
                 uv_coords[k] = v_data.uv;
             }
 
@@ -146,7 +152,9 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
             
             if (intensity > 0)
             {
-                render_draw_triangle_with_buffer_and_texture(r_ctx, screen_coords, uv_coords, zbuffer, model->tex);
+                render_draw_triangle_with_buffer_and_texture_and_shader(
+                    r_ctx, screen_coords, uv_coords, zbuffer, model->tex, varying_intensity,
+                    gouraud_shader);
                 //render_draw_triangle_with_buffer(r_ctx, screen_coords, zbuffer,
                 //                                 color_new(255.0, 0.0, 0.0, 0.0));
             }

@@ -6,6 +6,7 @@
 #include "matrix.h"
 #include "render.h"
 #include "camera.h"
+#include "shader.h"
 
 typedef struct
 {

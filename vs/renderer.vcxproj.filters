@@ -54,6 +54,9 @@
     <ClInclude Include="..\include\camera.h">
       <Filter>headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\shader.h">
+      <Filter>headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\src\color.c">
@@ -93,6 +96,9 @@
       <Filter>source</Filter>
     </ClCompile>
     <ClCompile Include="..\src\camera.c">
+      <Filter>source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\shader.c">
       <Filter>source</Filter>
     </ClCompile>
   </ItemGroup>

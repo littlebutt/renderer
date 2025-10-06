@@ -11,6 +11,8 @@
         (b) = _tmp;                                                                                     \
     } while (0);
 
+#define UNUSED(X)
+
 void render_draw_line(render_ctx *ctx, int x0, int y0, int x1, int y1, color c)
 {
     int steep = 0;
@@ -151,6 +153,7 @@ void _render_get_uv(vector3* pts, vector2* uvs, float x, float y, float* u, floa
 void render_draw_triangle_with_buffer_and_texture(render_ctx *ctx, vector3 *pts, vector2 *uvs,
                                                   float *zbuf, texture *tex)
 {
+    UNUSED(zbuf) // FIXME: Use z-buffer!
     vector2 bbox_min = vector2_new(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
     vector2 bbox_max = vector2_new(0, 0);
     vector2 clamp = vector2_new(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
@@ -176,6 +179,46 @@ void render_draw_triangle_with_buffer_and_texture(render_ctx *ctx, vector3 *pts,
              _render_get_uv(pts, uvs, p.x, p.y, &u, &v);
              color c = texture_sample(tex, u, v);
              render_set_pixel(ctx, p.x, p.y, c);
+        }
+    }
+}
+
+void render_draw_triangle_with_buffer_and_texture_and_shader(render_ctx* ctx, vector3* pts,
+    vector2* uvs, float* zbuf,
+    texture* tex, vector3* varying_intensity, shader *shader_)
+{
+    UNUSED(zbuf) // FIXME: Use z-buffer!
+    vector2 bbox_min = vector2_new(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+    vector2 bbox_max = vector2_new(0, 0);
+    vector2 clamp = vector2_new(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
+    for (int i = 0; i < 3; i++)
+    {
+        bbox_min.x = fmax(0, fmin(bbox_min.x, pts[i].x));
+        bbox_min.y = fmax(0, fmin(bbox_min.y, pts[i].y));
+
+        bbox_max.x = fmin(clamp.x, fmax(bbox_max.x, pts[i].x));
+        bbox_max.y = fmin(clamp.y, fmax(bbox_max.y, pts[i].y));
+    }
+    vector3 p;
+    for (p.x = bbox_min.x; p.x <= bbox_max.x; p.x++)
+    {
+        for (p.y = bbox_min.y; p.y <= bbox_max.y; p.y++)
+        {
+            vector3 bc_screen = _render_barycentric2(pts, p.x, p.y);
+            if (bc_screen.x < -EPSILON || bc_screen.y < -EPSILON || bc_screen.z < -EPSILON)
+            {
+                continue;
+            }
+            float u, v;
+            _render_get_uv(pts, uvs, p.x, p.y, &u, &v);
+            color c = texture_sample(tex, u, v);
+            c = color_new(255, 255, 255, 255);
+            int discard = shader_->ffunc(bc_screen, &c, varying_intensity);
+            if (!discard)
+            {
+                render_set_pixel(ctx, p.x, p.y, c);
+            }
+            
         }
     }
 }

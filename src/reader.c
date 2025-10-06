@@ -231,6 +231,7 @@ int _process_f(_process_ctx *ctx, _split_items *items)
     face f;
     vector3 face_normal = vector3_new(0, 0, 0);
     int vert_indices[3];
+    vector3 vertices[3]; // 存储三个顶点位置
     
     // 处理三个顶点
     for (int i = 0; i < 3; i++)
@@ -255,6 +256,9 @@ int _process_f(_process_ctx *ctx, _split_items *items)
             _get_vector3(ctx->norm, vn_idx, &norm) == 0) {
             return 0;
         }
+
+        // 保存顶点位置用于计算面法线
+        vertices[i] = *pos;
         
         // 创建顶点
         vertex _v = vertex_new(*pos, *norm, *uv);
@@ -283,9 +287,10 @@ int _process_f(_process_ctx *ctx, _split_items *items)
     f.vertex_indices[1] = vert_indices[1];
     f.vertex_indices[2] = vert_indices[2];
     
-    // 计算面法线（使用顶点法线的平均）
-    f.normal = face_normal;
-    f.normal = f.normal;
+    // 计算面法线（使用叉积）
+    vector3 edge1 = vector3_subtract(vertices[1], vertices[0]);
+    vector3 edge2 = vector3_subtract(vertices[2], vertices[0]);
+    f.normal = vector3_cross(edge1, edge2); // 确保法线朝外
     f.normal = vector3_normalize(f.normal);
     
     // 保存面

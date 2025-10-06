@@ -31,4 +31,12 @@ vector3 vector3_lerp(vector3 a, vector3 b, float t);
 vector3 vector3_normalize(vector3 a);
 float vector3_norm(vector3 a);
 
+typedef struct {
+    float x;
+    float y;
+    float z;
+    float a;
+} vector4;
+
+
 #endif // __VECTOR_H__
