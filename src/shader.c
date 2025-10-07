@@ -2,23 +2,31 @@
 
 #include <stdlib.h>
 
+matrix _calc_mvp(vector3 pos, matrix modelview, matrix projection, matrix viewport)
+{
+    matrix m = matrix_new(4, 1);
+    m.m[0][0] = pos.x;
+    m.m[1][0] = pos.y * -1;
+    m.m[2][0] = pos.z * -1;
+    m.m[3][0] = 1.f;
+    matrix _p = matrix_multiply(modelview, m, 4, 4, 4, 1);
+    matrix _m = matrix_multiply(projection, _p, 4, 4, 4, 1);
+    matrix _r = matrix_multiply(viewport, _m, 4, 4, 4, 1);
+    return _r;
+}
+
 vector3
     gouraud_vertex_func(int iface, int nthvert, model *model_, matrix modelview, matrix projection,
                         matrix viewport, vector3 light_dir, vector3 *varying_intensity)
 {
     int vertex_idx = model_->faces[iface].vertex_indices[nthvert];
     vertex vertex_ = model_->verts[vertex_idx];
-    matrix m = matrix_new(4, 1);
-    m.m[0][0] = vertex_.pos.x;
-    m.m[1][0] = vertex_.pos.y * -1;
-    m.m[2][0] = vertex_.pos.z * -1;
-    m.m[3][0] = 1.f;
-    matrix _p = matrix_multiply(modelview, m, 4, 4, 4, 1);
-    matrix _m = matrix_multiply(projection, _p, 4, 4, 4, 1);
-    matrix _r = matrix_multiply(viewport, _m, 4, 4, 4, 1);
+    matrix _r = _calc_mvp(vertex_.pos, modelview, projection, viewport);
     vector3 ajusted_normal = model_->faces[iface].normal;
-    ajusted_normal.y = -ajusted_normal.y;
-    ajusted_normal.z = -ajusted_normal.z;
+    matrix _rn = _calc_mvp(ajusted_normal, modelview, projection, viewport);
+    ajusted_normal.x = _rn.m[0][0] / _rn.m[3][0];
+    ajusted_normal.y = _rn.m[1][0] / _rn.m[3][0];
+    ajusted_normal.z = _rn.m[2][0] / _rn.m[3][0];
     ajusted_normal = vector3_normalize(ajusted_normal);
     float f = vector3_dot(ajusted_normal, light_dir);
     if (nthvert == 0)

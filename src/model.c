@@ -29,9 +29,9 @@ model *model_new(vertex_list *vl, texture *tex)
         // 计算面法线
         vector3 v1 = vector3_subtract(m->verts[i+1].pos, m->verts[i].pos);
         vector3 v2 = vector3_subtract(m->verts[i+2].pos, m->verts[i].pos);
-        vector3 normal = vector3_cross(v1, v2);
+        vector3 normal = vector3_cross(v2, v1);
         normal = vector3_normalize(normal);
-        f.normal = m->verts[i].norm;  // 使用第一个顶点的法线作为面法线
+        f.normal = normal;
         
         m->faces[fn++] = f;
     }
