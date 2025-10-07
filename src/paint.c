@@ -52,13 +52,6 @@ matrix v2m(vector3 v)
     return m;
 }
 
-//int _calculate_camera(paint_ctx *p_ctx, matrix *projection, matrix *viewport)
-//{
-//    *projection = matrix_identity(4);
-//    *viewport = _calculate_viewport(-250, -250, SCREEN_WIDTH * 3 / 4, SCREEN_HEIGHT * 3 / 4, BUFFER_DEPTH);
-//    projection->m[3][2] = 1.f / p_ctx->camera.z;
-//    return 1;
-//}
 
 int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
 {
@@ -108,17 +101,17 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
                 vertex v_data = model->verts[vertex_idx];
                 
                 world_coords[k] = v_data.pos;
-                
-                vector3 v = vector3_new(
-                    v_data.pos.x,
-                    v_data.pos.y * -1,
-                    v_data.pos.z * -1);
-                
-                // MVP变换
-                matrix _v = v2m(v);
-                matrix _p = matrix_multiply(modelview, _v, 4, 4, 4, 1);
-                matrix _m = matrix_multiply(projection, _p, 4, 4, 4, 1);
-                matrix _r = matrix_multiply(viewport_, _m, 4, 4, 4, 1);
+                //
+                //vector3 v = vector3_new(
+                //    v_data.pos.x,
+                //    v_data.pos.y * -1,
+                //    v_data.pos.z * -1);
+                //
+                //// MVP变换
+                //matrix _v = v2m(v);
+                //matrix _p = matrix_multiply(modelview, _v, 4, 4, 4, 1);
+                //matrix _m = matrix_multiply(projection, _p, 4, 4, 4, 1);
+                //matrix _r = matrix_multiply(viewport_, _m, 4, 4, 4, 1);
                 
                 vector3 __r = gouraud_shader->vfunc(i, k, model, modelview, projection, viewport_,
                                       p_ctx->l, varying_intensity);

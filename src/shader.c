@@ -1,6 +1,7 @@
 #include "shader.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 matrix _calc_mvp(vector3 pos, matrix modelview, matrix projection, matrix viewport)
 {
@@ -22,13 +23,19 @@ vector3
     int vertex_idx = model_->faces[iface].vertex_indices[nthvert];
     vertex vertex_ = model_->verts[vertex_idx];
     matrix _r = _calc_mvp(vertex_.pos, modelview, projection, viewport);
-    vector3 ajusted_normal = model_->faces[iface].normal;
-    matrix _rn = _calc_mvp(ajusted_normal, modelview, projection, viewport);
-    ajusted_normal.x = _rn.m[0][0] / _rn.m[3][0];
-    ajusted_normal.y = _rn.m[1][0] / _rn.m[3][0];
-    ajusted_normal.z = _rn.m[2][0] / _rn.m[3][0];
-    ajusted_normal = vector3_normalize(ajusted_normal);
-    float f = vector3_dot(ajusted_normal, light_dir);
+
+    vector3 n = vertex_.norm;
+    n.y *= -1.f;
+    n.z *= -1.f;
+    n = vector3_normalize(n);
+    vector3 ld = vector3_subtract(light_dir, vertex_.pos);
+    ld.y *= -1.f;
+    ld.z *= -1.f;
+    ld = vector3_normalize(ld);
+
+    float f = vector3_dot(n, ld);
+
+    // write per-vertex intensity into the three components of varying_intensity
     if (nthvert == 0)
     {
         varying_intensity->x = f > 0.f ? f : 0.f;
@@ -51,7 +58,19 @@ vector3
 int gouraud_fragment_func(vector3 v, color* color_, vector3* varying_intensity)
 {
     float intensity = vector3_dot(*varying_intensity, v);
-    vector3 res = vector3_multiply(vector3_new(255.f, 255.f, 255.f), intensity);
+    if (intensity > .85)
+        intensity = 1;
+    else if (intensity > .60)
+        intensity = .80;
+    else if (intensity > .45)
+        intensity = .60;
+    else if (intensity > .30)
+        intensity = .45;
+    else if (intensity > .15)
+        intensity = .30;
+    else
+        intensity = 0;
+    vector3 res = vector3_multiply(vector3_new(1.f, 0.5f, 0.f), intensity);
     color_->r = res.x;
     color_->g = res.y;
     color_->b = res.z;
