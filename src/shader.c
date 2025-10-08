@@ -35,7 +35,6 @@ vector3
 
     float f = vector3_dot(n, ld);
 
-    // write per-vertex intensity into the three components of varying_intensity
     if (nthvert == 0)
     {
         varying_intensity->x = f > 0.f ? f : 0.f;
