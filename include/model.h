@@ -12,6 +12,8 @@ typedef struct {
     vector3 normal;         // 面法线
 } face;
 
+typedef texture normal_map;
+
 typedef struct
 {
     vertex verts[MAX_VERTEX_NUM];  // 顶点数组
@@ -19,9 +21,10 @@ typedef struct
     size_t vert_len;              // 顶点数量
     size_t face_len;              // 面数量
     texture *tex;                 // 纹理
+    normal_map *nm;
 } model;
 
-model *model_new(vertex_list *vl, texture *tex);
+model *model_new(vertex_list *vl, texture *tex, normal_map *nm);
 
 size_t model_nverts(model *m);
 

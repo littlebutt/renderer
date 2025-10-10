@@ -2,6 +2,7 @@
 #define __MATRIX_H
 
 #include "config.h"
+#include "vector.h"
 
 typedef struct
 {
@@ -16,5 +17,6 @@ matrix matrix_identity(int dim);
 float *matrix_row(matrix m, int row);
 matrix matrix_multiply(matrix m, matrix value, int mrows, int mcols, int vrows, int vcols);
 matrix matrix_inverse(matrix m);
+vector2 matrix_multiply_vector3(matrix m, vector3 v);
 
 #endif // __MATRIX_H

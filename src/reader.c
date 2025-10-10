@@ -386,7 +386,7 @@ model *read_obj(char *filename)
 
         free(buffer);
     }
-    model* m = model_new((vertex_list*)ctx->vertices, NULL);
+    model* m = model_new((vertex_list*)ctx->vertices, NULL, NULL);
     
     // 复制面数据到模型
     memcpy(m->faces, ctx->faces, sizeof(face) * ctx->face_count);

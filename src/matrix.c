@@ -120,3 +120,11 @@ matrix matrix_inverse(matrix m)
             truncate.m[i][j] = result.m[i][j + m.cols];
     return truncate;
 }
+
+vector2 matrix_multiply_vector3(matrix m, vector3 v)
+{
+    vector2 res;
+    res.x = m.m[0][0] * v.x + m.m[0][1] * v.y + m.m[0][2] * v.z;
+    res.y = m.m[1][0] * v.x + m.m[1][1] * v.y + m.m[1][2] * v.z;
+    return res;
+}

@@ -18,7 +18,7 @@ matrix _calc_mvp(vector3 pos, matrix modelview, matrix projection, matrix viewpo
 
 vector3
     gouraud_vertex_func(int iface, int nthvert, model *model_, matrix modelview, matrix projection,
-                        matrix viewport, vector3 light_dir, vector3 *varying_intensity)
+                        matrix viewport, vector3 light_dir, shader_ctx *ctx)
 {
     int vertex_idx = model_->faces[iface].vertex_indices[nthvert];
     vertex vertex_ = model_->verts[vertex_idx];
@@ -37,15 +37,15 @@ vector3
 
     if (nthvert == 0)
     {
-        varying_intensity->x = f > 0.f ? f : 0.f;
+        ctx->varying_intensity.x = f > 0.f ? f : 0.f;
     }
     else if (nthvert == 1)
     {
-        varying_intensity->y = f > 0.f ? f : 0.f;
+        ctx->varying_intensity.y = f > 0.f ? f : 0.f;
     }
     else
     {
-        varying_intensity->z = f > 0.f ? f : 0.f;
+        ctx->varying_intensity.z = f > 0.f ? f : 0.f;
     }
     vector3 res;
     res.x = _r.m[0][0] / _r.m[3][0];
@@ -54,9 +54,9 @@ vector3
     return res;
 }
 
-int gouraud_fragment_func(vector3 v, color* color_, vector3* varying_intensity)
+int gouraud_fragment_func(vector3 v, color* color_, shader_ctx* ctx)
 {
-    float intensity = vector3_dot(*varying_intensity, v);
+    float intensity = vector3_dot((ctx->varying_intensity), v);
     if (intensity > .85)
         intensity = 1;
     else if (intensity > .60)
@@ -80,7 +80,34 @@ int gouraud_fragment_func(vector3 v, color* color_, vector3* varying_intensity)
 shader* make_gouraud_shader()
 { 
     shader *res = (shader *)malloc(sizeof(shader));
+    if (res == NULL)
+    {
+        return NULL;
+    }
     res->ffunc = gouraud_fragment_func;
     res->vfunc = gouraud_vertex_func;
     return res;
+}
+
+vector3 normalmap_vertex_func(int iface, int nthvert, model* model_, matrix modelview,
+    matrix projection, matrix viewport, vector3 light_dir, shader_ctx* ctx)
+{
+    int vertex_idx = model_->faces[iface].vertex_indices[nthvert];
+    vector2 vertex_uv = model_->verts[vertex_idx].uv;
+    ctx->varying_uv.m[1][nthvert] = vertex_uv.x;
+    ctx->varying_uv.m[0][nthvert] = vertex_uv.y;
+
+    vertex vertex_ = model_->verts[vertex_idx];
+    matrix _r = _calc_mvp(vertex_.pos, modelview, projection, viewport);
+    vector3 res;
+    res.x = _r.m[0][0] / _r.m[3][0];
+    res.y = _r.m[1][0] / _r.m[3][0];
+    res.z = _r.m[2][0] / _r.m[3][0];
+    return res;
+}
+
+int normalmap_fragment_func(vector3 v, color* color_, shader_ctx* ctx)
+{
+    vector2 uv = matrix_multiply_vector3(ctx->varying_uv, v);
+    // 从model_获取tga的normal
 }

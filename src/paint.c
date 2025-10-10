@@ -86,7 +86,13 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
         }
 
         shader *gouraud_shader = make_gouraud_shader();
-        vector3 *varying_intensity = (vector3 *)malloc(sizeof(vector3));
+        shader_ctx *s_ctx = (shader_ctx *)malloc(sizeof(shader_ctx));
+        if (s_ctx == NULL)
+        {
+            return 0;
+        }
+        s_ctx->varying_intensity = vector3_new(0.f, 0.f, 0.f);
+        s_ctx->varying_uv = matrix_new(2, 3);
         size_t nfaces = model_nfaces(model);
         for (int i = 0; i < nfaces; i++)
         {
@@ -114,7 +120,7 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
                 //matrix _r = matrix_multiply(viewport_, _m, 4, 4, 4, 1);
                 
                 vector3 __r = gouraud_shader->vfunc(i, k, model, modelview, projection, viewport_,
-                                      p_ctx->l, varying_intensity);
+                                                    p_ctx->l, s_ctx);
                 screen_coords[k] = __r;
                 uv_coords[k] = v_data.uv;
             }
@@ -146,7 +152,7 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
             if (intensity > 0)
             {
                 render_draw_triangle_with_buffer_and_texture_and_shader(
-                    r_ctx, screen_coords, uv_coords, zbuffer, model->tex, varying_intensity,
+                    r_ctx, screen_coords, uv_coords, zbuffer, model->tex, s_ctx,
                     gouraud_shader);
                 //render_draw_triangle_with_buffer(r_ctx, screen_coords, zbuffer,
                 //                                 color_new(255.0, 0.0, 0.0, 0.0));

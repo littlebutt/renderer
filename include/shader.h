@@ -6,11 +6,17 @@
 #include "matrix.h"
 #include "model.h"
 
+typedef struct
+{
+    vector3 varying_intensity;
+    matrix varying_uv;
+} shader_ctx;
+
 typedef vector3 vertex_func(int iface, int nthvert, model *model_, matrix modelview,
                             matrix projection, matrix viewport, vector3 light_dir,
-                            vector3 *varying_intensity);
+                            shader_ctx *ctx);
 
-typedef int fragment_func(vector3 v, color *color_, vector3 *varying_intensity);
+typedef int fragment_func(vector3 v, color *color_, shader_ctx *ctx);
 
 typedef struct
 {

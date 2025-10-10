@@ -1,6 +1,6 @@
 #include "model.h"
 
-model *model_new(vertex_list *vl, texture *tex)
+model *model_new(vertex_list *vl, texture *tex, normal_map *nm)
 {
     model *m = (model *)malloc(sizeof(model));
     if (!m) return NULL;
@@ -38,6 +38,7 @@ model *model_new(vertex_list *vl, texture *tex)
     m->face_len = fn;
     
     m->tex = tex;
+    m->nm = nm;
     return m;
 }
 
