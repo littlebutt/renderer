@@ -119,7 +119,7 @@ int paint(paint_ctx *p_ctx, render_ctx *r_ctx)
                 //matrix _m = matrix_multiply(projection, _p, 4, 4, 4, 1);
                 //matrix _r = matrix_multiply(viewport_, _m, 4, 4, 4, 1);
                 
-                vector3 __r = normalmap_shader->vfunc(i, k, &model, modelview, projection, viewport_,
+                vector3 __r = normalmap_shader->vfunc(i, k, model, modelview, projection, viewport_,
                                                     p_ctx->l, s_ctx);
                 screen_coords[k] = __r;
                 uv_coords[k] = v_data.uv;

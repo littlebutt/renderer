@@ -121,7 +121,7 @@ int normalmap_fragment_func(vector3 v, color *color_, model *model_, matrix mode
         matrix4x4_multiply_color(uniform_m, color_new(light_dir.x, light_dir.y, light_dir.z, 1.f));
     vector3 normalized_l = vector3_normalize(vector3_new(l.r, l.g, l.b));
     float intensity = fmax(0.f, vector3_dot(normalized_n, normalized_l));
-    color res = color_multiply(texture_sample(model_->tex, uv.x, uv.y), intensity);
+    color res = color_multiply(texture_sample(model_->tex, uv.y, uv.x), intensity);
     color_->r = res.r;
     color_->g = res.g;
     color_->b = res.b;
