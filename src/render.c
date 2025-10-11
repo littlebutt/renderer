@@ -184,8 +184,11 @@ void render_draw_triangle_with_buffer_and_texture(render_ctx *ctx, vector3 *pts,
 }
 
 void render_draw_triangle_with_buffer_and_texture_and_shader(render_ctx* ctx, vector3* pts,
-    vector2* uvs, float* zbuf,
-    texture* tex, shader_ctx* s_ctx, shader *shader_)
+                                                             vector2* uvs, float* zbuf,
+                                                             texture *tex, model *model_,
+                                                             matrix modelview, matrix projection,
+                                                             matrix viewport, vector3 light_dir,
+                                                             shader_ctx *s_ctx, shader *shader_)
 {
     UNUSED(zbuf) // FIXME: Use z-buffer!
     vector2 bbox_min = vector2_new(SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1);
@@ -213,7 +216,9 @@ void render_draw_triangle_with_buffer_and_texture_and_shader(render_ctx* ctx, ve
             _render_get_uv(pts, uvs, p.x, p.y, &u, &v);
             color c = texture_sample(tex, u, v);
             c = color_new(255, 255, 255, 255);
-            int discard = shader_->ffunc(bc_screen, &c, s_ctx);
+            matrix dummy_matrix = matrix_new(4, 4);
+            int discard = shader_->ffunc(bc_screen, &c, model_, modelview, projection,
+                                         viewport, light_dir, s_ctx);
             if (!discard)
             {
                 render_set_pixel(ctx, p.x, p.y, c);

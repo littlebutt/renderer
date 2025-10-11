@@ -54,7 +54,8 @@ vector3
     return res;
 }
 
-int gouraud_fragment_func(vector3 v, color* color_, shader_ctx* ctx)
+int gouraud_fragment_func(vector3 v, color *color_, model *model_, matrix modelview,
+                          matrix projection, matrix viewport, vector3 light_dir, shader_ctx *ctx)
 {
     float intensity = vector3_dot((ctx->varying_intensity), v);
     if (intensity > .85)
@@ -106,8 +107,36 @@ vector3 normalmap_vertex_func(int iface, int nthvert, model* model_, matrix mode
     return res;
 }
 
-int normalmap_fragment_func(vector3 v, color* color_, shader_ctx* ctx)
+int normalmap_fragment_func(vector3 v, color *color_, model *model_, matrix modelview,
+                            matrix projection, matrix viewport, vector3 light_dir, shader_ctx *ctx)
 {
-    vector2 uv = matrix_multiply_vector3(ctx->varying_uv, v);
-    // 从model_获取tga的normal
+    vector2 uv = matrix2x3_multiply_vector3(ctx->varying_uv, v);
+    matrix uniform_m = matrix_multiply(projection, modelview, 4, 4, 4, 4);
+    matrix uniform_mit = matrix_new(4, 4);
+    matrix_invert_transpose(&uniform_m, &uniform_mit);
+    color c = texture_sample(model_->nm, uv.x, uv.y);
+    color n = matrix4x4_multiply_color(uniform_mit, c);
+    vector3 normalized_n = vector3_normalize(vector3_new(n.r, n.g, n.b));
+    color l =
+        matrix4x4_multiply_color(uniform_m, color_new(light_dir.x, light_dir.y, light_dir.z, 1.f));
+    vector3 normalized_l = vector3_normalize(vector3_new(l.r, l.g, l.b));
+    float intensity = fmax(0.f, vector3_dot(normalized_n, normalized_l));
+    color res = color_multiply(texture_sample(model_->tex, uv.x, uv.y), intensity);
+    color_->r = res.r;
+    color_->g = res.g;
+    color_->b = res.b;
+    color_->a = res.a;
+    return 0;
+}
+
+shader *make_normalmap_shader()
+{
+    shader *res = (shader *)malloc(sizeof(shader));
+    if (res == NULL)
+    {
+        return NULL;
+    }
+    res->ffunc = normalmap_fragment_func;
+    res->vfunc = normalmap_vertex_func;
+    return res;
 }

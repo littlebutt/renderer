@@ -35,6 +35,11 @@ void render_draw_triangle_with_buffer_and_texture(render_ctx *ctx, vector3 *pts,
 void render_draw_triangle_with_buffer_and_texture_and_shader(render_ctx *ctx, vector3 *pts,
                                                              vector2 *uvs, float *zbuf,
                                                              texture *tex,
+                                                             model *model_,
+                                                             matrix modelview,
+                                                             matrix projection,
+                                                             matrix viewport,
+                                                             vector3 light_dir,
                                                              shader_ctx *s_ctx,
                                                              shader *shader_);
 

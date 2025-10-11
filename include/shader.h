@@ -9,14 +9,15 @@
 typedef struct
 {
     vector3 varying_intensity;
-    matrix varying_uv;
+    matrix varying_uv; // matrix2x3
 } shader_ctx;
 
 typedef vector3 vertex_func(int iface, int nthvert, model *model_, matrix modelview,
                             matrix projection, matrix viewport, vector3 light_dir,
                             shader_ctx *ctx);
 
-typedef int fragment_func(vector3 v, color *color_, shader_ctx *ctx);
+typedef int fragment_func(vector3 v, color *color_, model *model_, matrix modelview,
+                          matrix projection, matrix viewport, vector3 light_dir, shader_ctx *ctx);
 
 typedef struct
 {
@@ -25,5 +26,6 @@ typedef struct
 } shader;
 
 shader *make_gouraud_shader();
+shader *make_normalmap_shader();
 
 #endif // __SHADER_H
