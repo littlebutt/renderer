@@ -14,6 +14,8 @@ typedef struct {
 
 typedef texture normal_map;
 
+typedef texture specular_map;
+
 typedef struct
 {
     vertex verts[MAX_VERTEX_NUM];  // 顶点数组
@@ -21,10 +23,11 @@ typedef struct
     size_t vert_len;              // 顶点数量
     size_t face_len;              // 面数量
     texture *tex;                 // 纹理
-    normal_map *nm;
+    normal_map *nm;               // normal map
+    specular_map *sm;             // specular map
 } model;
 
-model *model_new(vertex_list *vl, texture *tex, normal_map *nm);
+model *model_new(vertex_list *vl, texture *tex, normal_map *nm, specular_map *sm);
 
 size_t model_nverts(model *m);
 

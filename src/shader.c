@@ -114,7 +114,7 @@ int normalmap_fragment_func(vector3 v, color *color_, model *model_, matrix mode
     matrix uniform_m = matrix_multiply(projection, modelview, 4, 4, 4, 4);
     matrix uniform_mit = matrix_new(4, 4);
     matrix_invert_transpose(&uniform_m, &uniform_mit);
-    color c = texture_sample(model_->nm, uv.x, uv.y);
+    color c = texture_sample(model_->nm, uv.y, uv.x);
     color n = matrix4x4_multiply_color(uniform_mit, c);
     vector3 normalized_n = vector3_normalize(vector3_new(n.r, n.g, n.b));
     color l =
@@ -138,5 +138,63 @@ shader *make_normalmap_shader()
     }
     res->ffunc = normalmap_fragment_func;
     res->vfunc = normalmap_vertex_func;
+    return res;
+}
+
+vector3 specularmap_vertex_func(int iface, int nthvert, model* model_, matrix modelview,
+    matrix projection, matrix viewport, vector3 light_dir,
+    shader_ctx* ctx)
+{
+    int vertex_idx = model_->faces[iface].vertex_indices[nthvert];
+    vector2 vertex_uv = model_->verts[vertex_idx].uv;
+    ctx->varying_uv.m[1][nthvert] = vertex_uv.x;
+    ctx->varying_uv.m[0][nthvert] = vertex_uv.y;
+
+    vertex vertex_ = model_->verts[vertex_idx];
+    matrix _r = _calc_mvp(vertex_.pos, modelview, projection, viewport);
+    vector3 res;
+    res.x = _r.m[0][0] / _r.m[3][0];
+    res.y = _r.m[1][0] / _r.m[3][0];
+    res.z = _r.m[2][0] / _r.m[3][0];
+    return res;
+}
+
+int specularmap_fragment_func(vector3 v, color *color_, model *model_, matrix modelview,
+                            matrix projection, matrix viewport, vector3 light_dir, shader_ctx *ctx)
+{
+    vector2 uv = matrix2x3_multiply_vector3(ctx->varying_uv, v);
+    matrix uniform_m = matrix_multiply(projection, modelview, 4, 4, 4, 4);
+    matrix uniform_mit = matrix_new(4, 4);
+    matrix_invert_transpose(&uniform_m, &uniform_mit);
+    color c = texture_sample(model_->nm, uv.y, uv.x);
+    color n = matrix4x4_multiply_color(uniform_mit, c);
+    vector3 normalized_n = vector3_normalize(vector3_new(n.r, n.g, n.b));
+    color l =
+        matrix4x4_multiply_color(uniform_m, color_new(light_dir.x, light_dir.y, light_dir.z, 1.f));
+    vector3 normalized_l = vector3_normalize(vector3_new(l.r, l.g, l.b));
+    vector3 r = vector3_subtract(
+        vector3_cross(normalized_n,
+                      vector3_cross(normalized_n, vector3_multiply(normalized_l, 2.f))),
+        normalized_l);
+    vector3 normalized_r = vector3_normalize(r);
+    float spec = pow(fmax(normalized_r.x, 0.f), texture_sample(model_->nm, uv.y, uv.x).r);
+    float diff = fmax(0.f, vector3_dot(normalized_n, normalized_l));
+    color c_ = texture_sample(model_->tex, uv.y, uv.x);
+    color_->r = fmin(5 + c_.r * (diff + 0.6 * spec), 255);
+    color_->g = fmin(5 + c_.g * (diff + 0.6 * spec), 255);
+    color_->b = fmin(5 + c_.b * (diff + 0.6 * spec), 255);
+    color_->a = fmin(5 + c_.a * (diff + 0.6 * spec), 255);
+    return 0;
+}
+
+shader* make_specularmap_shader()
+{
+    shader *res = (shader *)malloc(sizeof(shader));
+    if (res == NULL)
+    {
+        return NULL;
+    }
+    res->ffunc = specularmap_fragment_func;
+    res->vfunc = specularmap_vertex_func;
     return res;
 }

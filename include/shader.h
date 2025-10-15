@@ -27,5 +27,6 @@ typedef struct
 
 shader *make_gouraud_shader();
 shader *make_normalmap_shader();
+shader *make_specularmap_shader();
 
 #endif // __SHADER_H
